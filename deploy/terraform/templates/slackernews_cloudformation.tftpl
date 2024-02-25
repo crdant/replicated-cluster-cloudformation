@@ -45,6 +45,42 @@ Resources:
       Channel: !If [ IsBeta, Beta, Stable ]
       Type: !FindInMap [ LicenseType, !Ref SubscriptionType, Type ]
 
+  InitialNode:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0abcdef1234567890    # Ubuntu Jammy, need to make flexible for region
+      InstanceType: m7i-flex.xlarge     # should probably account for changing this as well
+      SecurityGroups:
+        - !Ref EmbeddedClusterSecurityGroup
+      UserData:
+        Fn::Base64: 
+          !Sub 
+            - |
+            #cloud-config
+            ${user_data}
+            - InstallerUri: !GetAtt CreateLicense.InstallerUri
+              DownloadToken: !GetAtt CreateLicense.DownloadToken
+
+  EmbeddedClusterSecurityGroup
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable access via SSH and the Admin Console
+      SecurityGroupIngress:
+        # SSH
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0 
+        # Admin console
+        - IpProtocol: tcp
+          FromPort: '30000'
+          ToPort: '30000'
+          CidrIp: 0.0.0.0/0
+        # HTTPS for ingress/application traffic
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+
 Outputs:
   InstallUri:
     Description: URI for the embedded clustser download
@@ -55,3 +91,9 @@ Outputs:
   LicenseUri:
     Description: URI of the Replicated license file
     Value: !GetAtt CreateLicense.LicenseFileUri
+  InstanceId:
+    Description: The Instance ID
+    Value: !Ref InitialNode
+  PublicIP:
+    Description: The Public IP address of the instance
+    Value: !GetAtt InitialNode.PublicIp

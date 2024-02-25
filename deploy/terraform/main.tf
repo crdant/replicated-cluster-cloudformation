@@ -1,12 +1,23 @@
+resource "random_pet" "admin_console_password" {
+  length = 4
+}
+
 locals {
+  user_data = templatefile("${path.module}/templates/user-data.tftpl",
+                             {
+                               application = var.application,
+                               install_dir = "/opt/${var.application}",
+                               admin_console_password = random_pet.admin_console_password.id
+                              }
+                          )
   cloudformation_template = templatefile("${path.module}/templates/slackernews_cloudformation.tftpl",
                                 {
                                   lambda_function_arn = aws_lambda_function.create_license.arn
+                                  user_data = local.user_data
                                   app_id = var.app_id
                                 }
                              )
 }
-
 resource "random_pet" "bucket_suffix" {
   length = 2
 }

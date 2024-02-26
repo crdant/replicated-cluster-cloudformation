@@ -19,6 +19,11 @@ variable "api_token" {
   type        = string
 }
 
+variable "application" {
+  description = "The slug for your application on the Replicated vendor portal"
+  type        = string
+}
+
 variable "app_id" {
   description = "The ID of your application on the Replicated vendor portal"
   type        = string

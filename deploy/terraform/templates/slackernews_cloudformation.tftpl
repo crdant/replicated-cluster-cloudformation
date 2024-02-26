@@ -24,6 +24,11 @@ Parameters:
       Email to use for you description. This will be your login for accessing the Slackernews
       Helm chart and will not be used for any other purposes.
 
+  PublicKey:
+    Type: String
+    Description: |
+      Public key to enable connecting to the initial node of the cluster via SSH
+
 Mappings:
   LicenseType:
     Paid:
@@ -45,6 +50,42 @@ Resources:
       Channel: !If [ IsBeta, Beta, Stable ]
       Type: !FindInMap [ LicenseType, !Ref SubscriptionType, Type ]
 
+  InitialNode:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0982d319985cb387e    # Ubuntu Jammy, need to make flexible for region
+      InstanceType: m7i-flex.xlarge     # should probably account for changing this as well
+      SecurityGroups:
+        - !Ref EmbeddedClusterSecurityGroup
+      UserData:
+        Fn::Base64: 
+          Fn::Sub:
+            - |
+              ${user_data}
+            - InstallerUri: !GetAtt CreateLicense.InstallerUri
+              DownloadToken: !GetAtt CreateLicense.DownloadToken
+              PublicKey: !Ref PublicKey
+
+  EmbeddedClusterSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable access via SSH and the Admin Console
+      SecurityGroupIngress:
+        # SSH
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0 
+        # Admin console
+        - IpProtocol: tcp
+          FromPort: '30000'
+          ToPort: '30000'
+          CidrIp: 0.0.0.0/0
+        # HTTPS for ingress/application traffic
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+
 Outputs:
   InstallUri:
     Description: URI for the embedded clustser download
@@ -55,3 +96,12 @@ Outputs:
   LicenseUri:
     Description: URI of the Replicated license file
     Value: !GetAtt CreateLicense.LicenseFileUri
+  NodePublicHostname:
+    Description: Public hostname for the initial cloud instance
+    Value: !GetAtt InitialNode.PublicDnsName
+  ConsoleUri:
+    Description: URI to access the admin console of the new cluster
+    Value: !Sub http://$${InitialNode.PublicIp}:30000
+  ConsolePassword:
+    Description: Password to log into the admin console
+    Value: ${admin_console_password}

@@ -13,8 +13,9 @@ locals {
   cloudformation_template = templatefile("${path.module}/templates/slackernews_cloudformation.tftpl",
                                 {
                                   lambda_function_arn = aws_lambda_function.create_license.arn
-                                  user_data = local.user_data
+                                  user_data = indent(14, local.user_data)
                                   app_id = var.app_id
+                                  admin_console_password = random_pet.admin_console_password.id
                                 }
                              )
 }
@@ -28,17 +29,32 @@ data "aws_iam_policy_document" "stack_policy" {
     actions   = [ "lambda:InvokeFunction" ]
     resources = [ aws_lambda_function.create_license.arn ]
   }
+  statement {
+    effect = "Allow"
+    actions   = [
+                  "ec2:RunInstances",
+                  "ec2:TerminateInstances",
+                  "ec2:DescribeInstances",
+                  "ec2:DescribeInstanceStatus",
+                  "ec2:CreateSecurityGroup",
+                  "ec2:DeleteSecurityGroup",
+                  "ec2:AuthorizeSecurityGroupIngress",
+                  "ec2:RevokeSecurityGroupIngress",
+                  "ec2:DescribeSecurityGroups" 
+                ]
+    resources = [ "*" ]
+  }
 }
 
 resource "aws_iam_policy" "stack_policy" {
-  name        = "create-license-lambda-invoke-policy"
+  name        = "create-embedded-cluster-policy"
   description = "License creation stack policy"
 
   policy = data.aws_iam_policy_document.stack_policy.json
 }
 
 resource "aws_iam_role" "stack_role" {
-  name = "create-license-stack-role"
+  name = "create-embedded-cluster-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",

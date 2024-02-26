@@ -24,6 +24,11 @@ Parameters:
       Email to use for you description. This will be your login for accessing the Slackernews
       Helm chart and will not be used for any other purposes.
 
+  PublicKey:
+    Type: String
+    Description: |
+      Public key to enable connecting to the initial node of the cluster via SSH
+
 Mappings:
   LicenseType:
     Paid:
@@ -48,20 +53,20 @@ Resources:
   InitialNode:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0abcdef1234567890    # Ubuntu Jammy, need to make flexible for region
+      ImageId: ami-0982d319985cb387e    # Ubuntu Jammy, need to make flexible for region
       InstanceType: m7i-flex.xlarge     # should probably account for changing this as well
       SecurityGroups:
         - !Ref EmbeddedClusterSecurityGroup
       UserData:
         Fn::Base64: 
-          !Sub 
+          Fn::Sub:
             - |
-            #cloud-config
-            ${user_data}
+              ${user_data}
             - InstallerUri: !GetAtt CreateLicense.InstallerUri
               DownloadToken: !GetAtt CreateLicense.DownloadToken
+              PublicKey: !Ref PublicKey
 
-  EmbeddedClusterSecurityGroup
+  EmbeddedClusterSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Enable access via SSH and the Admin Console
@@ -91,9 +96,12 @@ Outputs:
   LicenseUri:
     Description: URI of the Replicated license file
     Value: !GetAtt CreateLicense.LicenseFileUri
-  InstanceId:
-    Description: The Instance ID
-    Value: !Ref InitialNode
-  PublicIP:
-    Description: The Public IP address of the instance
-    Value: !GetAtt InitialNode.PublicIp
+  NodePublicHostname:
+    Description: Public hostname for the initial cloud instance
+    Value: !GetAtt InitialNode.PublicDnsName
+  ConsoleUri:
+    Description: URI to access the admin console of the new cluster
+    Value: !Sub http://$${InitialNode.PublicIp}:30000
+  ConsolePassword:
+    Description: Password to log into the admin console
+    Value: ${admin_console_password}

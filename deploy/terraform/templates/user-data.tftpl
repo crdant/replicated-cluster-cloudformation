@@ -10,8 +10,6 @@
 # Some additional examples are provided in comments below the default
 # configuration.
 
-prefer_fqdn_over_hostname: true
-
 chpasswd:
   expire: false
 
@@ -23,6 +21,9 @@ packages:
 # Update apt database and upgrade packages on first boot
 package_update: true
 package_upgrade: true
+
+ssh_authorized_keys:
+- $${PublicKey}}
 
 users:
 - default
@@ -64,16 +65,19 @@ write_files:
 runcmd:
 - |
   # download the latest release of the Replicated embedded cluster from GitHub and install it
-  curl $${InstallerUri} -H "Authorization: $${DownloadToken}" -o ${application}.tgz
-  tar -xzf ${application}.tar.gz \
-    && rm ${application}.tar.gz \
-    && ./${application} --license ./license.yaml --no-prompt
+  cd /home/ubuntu
+  curl $${InstallerUri} -H "Authorization: $${DownloadToken}" \
+      | tar -xzf - \
+    && ./${application} install --license ./license.yaml --no-prompt
+  chown ubuntu:ubuntu ./${application}
 
 - |
   # download the Replicated KOTS CLI, which plugs into the `kubectl` command
   # and provides a subcommend to reset the password for the admin console
+  export REPL_INSTALL_PATH=/var/lib/embedded-cluster/bin
   curl https://kots.io/install | bash
 
 - |
   # use the KOTS CLI to reset the admin console password`
-  echo ${admin_console_password} | $${HOME}/.config/.${application}/bin/kubectl kots reset-password --kubeconfig $${HOME}/.config/.${application}/etc/kubeconfig --namespace kotsadm
+  export PATH=$${!PATH}:/var/lib/embedded-cluster/bin
+  echo ${admin_console_password} | kubectl kots reset-password --kubeconfig /var/lib/k0s/pki/admin.conf --namespace kotsadm

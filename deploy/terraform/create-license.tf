@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "api_token" {
-  name        = "replicated_api_token"
+  name        = "${var.application}-replicated-api-token"
   description = "API token the Replicated Vendor Portal"
 }
 
@@ -34,11 +34,11 @@ resource "aws_s3_bucket_versioning" "licenses" {
 }
 
 resource "aws_lambda_function" "create_license" {
-  function_name = "create-replicated-license"
+  function_name = "create-${var.application}-license"
   architectures = ["arm64"]
 
-  handler       = "main.handler"  # Assuming your Python file is named lambda_function.py
-  role          = aws_iam_role.lambda_exec_role.arn
+  handler       = "main.handler"  
+  role          = aws_iam_role.license_lambda_exec_role.arn
   runtime       = "python3.11"
 
   filename         = "${var.build_directory}/create-license.zip"
@@ -56,7 +56,7 @@ resource "aws_lambda_function" "create_license" {
 }
 
 resource "aws_iam_policy" "lambda_license_bucket" {
-  name   = "lambda_license_bucket"
+  name   = "${var.application}-license-bucket"
   policy = data.aws_iam_policy_document.lambda_license_bucket.json
 }
 
@@ -74,39 +74,39 @@ data "aws_iam_policy_document" "lambda_license_bucket" {
   }
 }
 
-resource "aws_iam_policy" "lambda_secrets_manager" {
-  name   = "lambda_secrets_manager"
-  policy = data.aws_iam_policy_document.lambda_secrets_manager.json
+resource "aws_iam_policy" "create_license_secrets_manager" {
+  name   = "create-${var.application}-license-secrets_manager"
+  policy = data.aws_iam_policy_document.create_license_secrets_manager.json
 }
 
-data "aws_iam_policy_document" "lambda_secrets_manager" {
+data "aws_iam_policy_document" "create_license_secrets_manager" {
   statement {
     actions   = ["secretsmanager:GetSecretValue"]
     resources = [aws_secretsmanager_secret.api_token.arn]
   }
 }
 
-data "aws_iam_policy" "lambda_exec_policy" {
+data "aws_iam_policy" "license_lambda_exec_policy" {
   name = "AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_license_bucket" {
-  role       = aws_iam_role.lambda_exec_role.id
+  role       = aws_iam_role.license_lambda_exec_role.id
   policy_arn = aws_iam_policy.lambda_license_bucket.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_secrets_manager" {
-  role       = aws_iam_role.lambda_exec_role.id
-  policy_arn = aws_iam_policy.lambda_secrets_manager.arn
+resource "aws_iam_role_policy_attachment" "create_license_secrets_manager" {
+  role       = aws_iam_role.license_lambda_exec_role.id
+  policy_arn = aws_iam_policy.create_license_secrets_manager.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_exec_policy" {
-  role       = aws_iam_role.lambda_exec_role.id
-  policy_arn = data.aws_iam_policy.lambda_exec_policy.arn
+resource "aws_iam_role_policy_attachment" "license_lambda_exec_policy" {
+  role       = aws_iam_role.license_lambda_exec_role.id
+  policy_arn = data.aws_iam_policy.license_lambda_exec_policy.arn
 }
 
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda_exec_role"
+resource "aws_iam_role" "license_lambda_exec_role" {
+  name = "${var.application}-license-lambda-exec"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",

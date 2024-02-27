@@ -15,7 +15,7 @@ class Customer:
 
   @classmethod
   def create(cls,api_token, name, email, app_id, expires_at, license_type, channel):
-    logger.debug("creating new customer instance for {name}".format(name=name))
+    logger.debug(f'creating new customer instance for {name}')
     instance = cls(api_token)
     instance.id = None
     instance.api_token = api_token
@@ -36,7 +36,7 @@ class Customer:
     instance.isIdentityServiceSupported = False
     instance.isSnapshotSupported = False
 
-    logger.debug("saving new customer instance for {name}".format(name=name))
+    logger.debug(f'saving new customer instance for {name}')
     instance.save()
     return instance
 

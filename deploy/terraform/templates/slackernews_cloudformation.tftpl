@@ -1,6 +1,54 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
+  InstanceType:
+    Type: String
+    Description: |
+      Select an instance type for your initial cluster node
+    AllowedValues:
+      - t2.2xlarge
+      - t2.xlarge
+      - t3.2xlarge
+      - t3.xlarge
+      - t3a.2xlarge
+      - t3a.xlarge
+      - trn1.2xlarge
+      - m5.2xlarge
+      - m5.xlarge
+      - m5a.2xlarge
+      - m5a.xlarge
+      - m5ad.2xlarge
+      - m5ad.xlarge
+      - m5d.2xlarge
+      - m5d.xlarge
+      - m5dn.2xlarge
+      - m5dn.xlarge
+      - m5n.2xlarge
+      - m5n.xlarge
+      - m5zn.2xlarge
+      - m5zn.xlarge
+      - m6a.2xlarge
+      - m6a.xlarge
+      - m6i.2xlarge
+      - m6i.xlarge
+      - m6id.2xlarge
+      - m6id.xlarge
+      - m6idn.2xlarge
+      - m6idn.xlarge
+      - m6in.2xlarge
+      - m6in.xlarge
+      - m7a.2xlarge
+      - m7a.xlarge
+      - m7i-flex.2xlarge
+      - m7i-flex.xlarge
+      - m7i.2xlarge
+      - m7i.xlarge
+
+  DiskSize:
+    Type: Number
+    Description: |
+      Size for the boot disk
+
   SubscriptionType:
     Type: String
     Description: |
@@ -35,7 +83,70 @@ Mappings:
       Type: prod
     Trial:
       Type: trial
-      
+  Ami:
+    cn-northwest-1:
+      AmiId: ami-07e6c9034a08c1dbf
+    cn-north-1:
+      AmiId: ami-0b7b34ceb17dcc9fc
+    me-central-1:
+      AmiId: ami-0c139b9dae09be9e2
+    eu-central-1:
+      AmiId: ami-04b4614474c70b684
+    us-west-1:
+      AmiId: ami-0c38318f8f25527a5
+    ap-south-1:
+      AmiId: ami-0f90ab0fec3fc43f3
+    eu-north-1:
+      AmiId: ami-0459e5983f05e6617
+    il-central-1:
+      AmiId: ami-0a3e30ed291e0d7ea
+    eu-south-1:
+      AmiId: ami-0e7a221fdd9e64dac
+    af-south-1:
+      AmiId: ami-0decfbd5a093c684c
+    ap-northeast-1:
+      AmiId: ami-099736a66378f9001
+    ca-west-1:
+      AmiId: ami-0432f4e0c147c0802
+    ca-central-1:
+      AmiId: ami-0c793c682dfb697a2
+    ap-east-1:
+      AmiId: ami-05d0f4f91a366f1c7
+    me-south-1:
+      AmiId: ami-0329a770f5f6d59a3
+    eu-west-1:
+      AmiId: ami-0652a081025ec9fee
+    sa-east-1:
+      AmiId: ami-0f3364e7ea49de92c
+    us-east-1:
+      AmiId: ami-0cf1810907a781f00
+    ap-southeast-1:
+      AmiId: ami-02da9706e7051f070
+    us-west-2:
+      AmiId: ami-0982d319985cb387e
+    ap-south-2:
+      AmiId: ami-004cebaa37d90ee8f
+    eu-central-2:
+      AmiId: ami-07b29705c75330df0
+    eu-west-2:
+      AmiId: ami-08e4526a271956ce2
+    eu-south-2:
+      AmiId: ami-0176060ac25de3bda
+    ap-northeast-2:
+      AmiId: ami-07a34fe09b79cabe9
+    us-east-2:
+      AmiId: ami-0265ca2039df27f61
+    ap-southeast-2:
+      AmiId: ami-0c753d8771a18f619
+    eu-west-3:
+      AmiId: ami-0d64d778de0fdce8d
+    ap-northeast-3:
+      AmiId: ami-0dc058c69dc03aab0
+    ap-southeast-3:
+      AmiId: ami-0a5b89748767645f4
+    ap-southeast-4:
+      AmiId: ami-08ebbe38fdf98b63a
+ 
 Conditions:
   IsBeta: !Equals [ BetaProgram, "Yes" ]
 
@@ -44,7 +155,7 @@ Resources:
     Type: Custom::LambdaTrigger
     Properties:
       ServiceToken: ${license_function_arn}
-      Name: !Sub '$${AWS::AccountId}-$${AWS::Region}-$${AWS::StackId}' 
+      Name: !Sub '$${AWS::StackId}' 
       Email: !Ref Email
       AppId: ${app_id}
       Channel: !If [ IsBeta, Beta, Stable ]
@@ -59,10 +170,16 @@ Resources:
   InitialNode:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0982d319985cb387e    # Ubuntu Jammy, need to make flexible for region
-      InstanceType: m7i-flex.xlarge     # should probably account for changing this as well
+      ImageId: !FindInMap [ Ami, !Ref AWS::Region, AmiId ]
+      InstanceType: !Ref InstanceType   
       SecurityGroups:
         - !Ref EmbeddedClusterSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1" 
+          Ebs:
+            VolumeSize: !Ref DiskSize 
+            VolumeType: gp3 
+            DeleteOnTermination: true 
       UserData:
         Fn::Base64: 
           Fn::Sub:

@@ -6,7 +6,6 @@ secrets_manager = boto3.client('secretsmanager')
 import petname
 import base64
 import uuid
-import bcrypt
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

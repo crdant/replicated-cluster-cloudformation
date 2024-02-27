@@ -44,7 +44,6 @@ Parameters:
       - m7i.2xlarge
       - m7i.xlarge
 
-  
   DiskSize:
     Type: Number
     Description: |
@@ -84,7 +83,7 @@ Mappings:
       Type: prod
     Trial:
       Type: trial
-  Amis:
+  Ami:
     cn-northwest-1:
       AmiId: ami-07e6c9034a08c1dbf
     cn-north-1:
@@ -171,7 +170,7 @@ Resources:
   InitialNode:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: !FindInMap [ Amis, !Sub $${AWS::Region}, AmiId ]  # uses Jammy for the given region
+      ImageId: !FindInMap [ Ami, !Ref AWS::Region, AmiId ]
       InstanceType: !Ref InstanceType   
       SecurityGroups:
         - !Ref EmbeddedClusterSecurityGroup

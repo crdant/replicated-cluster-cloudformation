@@ -43,12 +43,18 @@ Resources:
   CreateLicense:
     Type: Custom::LambdaTrigger
     Properties:
-      ServiceToken: ${lambda_function_arn}
+      ServiceToken: ${license_function_arn}
       Name: !Sub '$${AWS::AccountId}-$${AWS::Region}-$${AWS::StackId}' 
       Email: !Ref Email
       AppId: ${app_id}
       Channel: !If [ IsBeta, Beta, Stable ]
       Type: !FindInMap [ LicenseType, !Ref SubscriptionType, Type ]
+
+  GeneratePassword:
+    Type: Custom::LambdaTrigger
+    Properties:
+      ServiceToken: ${password_function_arn}
+      SecretName: !Sub '$${AWS::StackName}-admin-console' 
 
   InitialNode:
     Type: AWS::EC2::Instance
@@ -65,6 +71,7 @@ Resources:
             - InstallerUri: !GetAtt CreateLicense.InstallerUri
               DownloadToken: !GetAtt CreateLicense.DownloadToken
               PublicKey: !Ref PublicKey
+              AdminConsolePassword: !GetAtt GeneratePassword.Password
 
   EmbeddedClusterSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -102,6 +109,6 @@ Outputs:
   ConsoleUri:
     Description: URI to access the admin console of the new cluster
     Value: !Sub http://$${InitialNode.PublicIp}:30000
-  ConsolePassword:
-    Description: Password to log into the admin console
-    Value: ${admin_console_password}
+  PasswordSecret:
+    Description: Secrets manager secret containing the initial Admin Console password
+    Value: !GetAtt GeneratePassword.SecretArn

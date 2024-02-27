@@ -80,4 +80,4 @@ runcmd:
 - |
   # use the KOTS CLI to reset the admin console password`
   export PATH=$${!PATH}:/var/lib/embedded-cluster/bin
-  echo ${admin_console_password} | kubectl kots reset-password --kubeconfig /var/lib/k0s/pki/admin.conf --namespace kotsadm
+  echo "$${AdminConsolePassword}" | kubectl kots reset-password --kubeconfig /var/lib/k0s/pki/admin.conf --namespace kotsadm

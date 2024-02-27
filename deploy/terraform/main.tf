@@ -1,21 +1,17 @@
-resource "random_pet" "admin_console_password" {
-  length = 4
-}
-
 locals {
   user_data = templatefile("${path.module}/templates/user-data.tftpl",
                              {
                                application = var.application,
                                install_dir = "/opt/${var.application}",
-                               admin_console_password = random_pet.admin_console_password.id
                               }
                           )
   cloudformation_template = templatefile("${path.module}/templates/slackernews_cloudformation.tftpl",
                                 {
-                                  lambda_function_arn = aws_lambda_function.create_license.arn
+                                  license_function_arn = aws_lambda_function.create_license.arn
+                                  password_function_arn = aws_lambda_function.generate_password.arn
                                   user_data = indent(14, local.user_data)
                                   app_id = var.app_id
-                                  admin_console_password = random_pet.admin_console_password.id
+                                  application = var.application,
                                 }
                              )
 }
@@ -29,6 +25,13 @@ data "aws_iam_policy_document" "stack_policy" {
     actions   = [ "lambda:InvokeFunction" ]
     resources = [ aws_lambda_function.create_license.arn ]
   }
+
+  statement {
+    effect = "Allow"
+    actions   = [ "lambda:InvokeFunction" ]
+    resources = [ aws_lambda_function.generate_password.arn ]
+  }
+
   statement {
     effect = "Allow"
     actions   = [
@@ -47,14 +50,14 @@ data "aws_iam_policy_document" "stack_policy" {
 }
 
 resource "aws_iam_policy" "stack_policy" {
-  name        = "create-embedded-cluster-policy"
+  name        = "create-${var.application}-cluster"
   description = "License creation stack policy"
 
   policy = data.aws_iam_policy_document.stack_policy.json
 }
 
 resource "aws_iam_role" "stack_role" {
-  name = "create-embedded-cluster-role"
+  name = "create-${var.application}-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",

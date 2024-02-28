@@ -169,6 +169,9 @@ Resources:
 
   InitialNode:
     Type: AWS::EC2::Instance
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: 'PT15M'
     Properties:
       ImageId: !FindInMap [ Ami, !Ref AWS::Region, AmiId ]
       InstanceType: !Ref InstanceType   
@@ -189,6 +192,9 @@ Resources:
               DownloadToken: !GetAtt CreateLicense.DownloadToken
               PublicKey: !Ref PublicKey
               AdminConsolePassword: !GetAtt GeneratePassword.Password
+              StackName: !Ref AWS::StackName 
+              ResourceName: InitialNode 
+              Region: !Ref AWS::Region
 
   EmbeddedClusterSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'

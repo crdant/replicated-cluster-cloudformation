@@ -17,6 +17,7 @@ packages:
 - ca-certificates
 - curl
 - jq
+- python3-pip
 
 # Update apt database and upgrade packages on first boot
 package_update: true
@@ -81,3 +82,12 @@ runcmd:
   # use the KOTS CLI to reset the admin console password`
   export PATH=$${!PATH}:/var/lib/embedded-cluster/bin
   echo "$${AdminConsolePassword}" | kubectl kots reset-password --kubeconfig /var/lib/k0s/pki/admin.conf --namespace kotsadm
+
+- |
+  # install cloud formation bootstrap scripts and signal completion
+  curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz -o /tmp/aws-cfn-bootstrap-latest.tar.gz \
+    && pip3 install /tmp/aws-cfn-bootstrap-latest.tar.gz \
+    && rm /tmp/aws-cfn-bootstrap-latest.tar.gz
+  /usr/local/bin/cfn-signal --success true --stack $${StackName} --resource $${ResourceName} --region $${Region}
+
+  

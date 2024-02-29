@@ -175,8 +175,11 @@ Resources:
     Properties:
       ImageId: !FindInMap [ Ami, !Ref AWS::Region, AmiId ]
       InstanceType: !Ref InstanceType   
-      SecurityGroups:
-        - !Ref EmbeddedClusterSecurityGroup
+      SubnetId: !Ref ClusterSubnet
+      SecurityGroupIds:
+        - Fn::GetAtt:
+          - ClusterSecurityGroup
+          - GroupId
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1" 
           Ebs:
@@ -196,10 +199,53 @@ Resources:
               ResourceName: InitialNode 
               Region: !Ref AWS::Region
 
-  EmbeddedClusterSecurityGroup:
+  ClusterVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.20.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  ClusterSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ClusterVPC
+      CidrBlock: 10.20.1.0/24
+      MapPublicIpOnLaunch: true
+
+  ClusterInternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref ClusterVPC
+      InternetGatewayId: !Ref ClusterInternetGateway
+
+  ClusterRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref ClusterVPC
+
+  ClusterRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref ClusterRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref ClusterInternetGateway
+
+  ClusterSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref ClusterSubnet
+      RouteTableId: !Ref ClusterRouteTable
+
+  ClusterSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Enable access via SSH and the Admin Console
+      VpcId: !Ref ClusterVPC
       SecurityGroupIngress:
         # SSH
         - IpProtocol: tcp

@@ -43,7 +43,32 @@ data "aws_iam_policy_document" "stack_policy" {
                   "ec2:DeleteSecurityGroup",
                   "ec2:AuthorizeSecurityGroupIngress",
                   "ec2:RevokeSecurityGroupIngress",
-                  "ec2:DescribeSecurityGroups" 
+                  "ec2:DescribeSecurityGroups",
+                  "ec2:CreateVpc",
+                  "ec2:DeleteVpc",
+                  "ec2:ModifyVpcAttribute",
+                  "ec2:DescribeVpcs",
+                  "ec2:CreateSubnet",
+                  "ec2:DeleteSubnet",
+                  "ec2:ModifySubnetAttribute",
+                  "ec2:DescribeSubnets",
+                  "ec2:CreateInternetGateway",
+                  "ec2:DeleteInternetGateway",
+                  "ec2:AttachInternetGateway",
+                  "ec2:DetachInternetGateway",
+                  "ec2:DescribeInternetGateways",
+                  "ec2:CreateRoute",
+                  "ec2:CreateRouteTable",
+                  "ec2:DeleteRoute",
+                  "ec2:DeleteRouteTable",
+                  "ec2:AssociateRouteTable",
+                  "ec2:DisassociateRouteTable",
+                  "ec2:DescribeRouteTables",
+                  "ec2:CreateSecurityGroup",
+                  "ec2:DeleteSecurityGroup",
+                  "ec2:AuthorizeSecurityGroupIngress",
+                  "ec2:RevokeSecurityGroupIngress",
+                  "ec2:DescribeSecurityGroups"
                 ]
     resources = [ "*" ]
   }

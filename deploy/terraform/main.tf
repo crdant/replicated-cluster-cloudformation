@@ -7,8 +7,7 @@ locals {
                           )
   cloudformation_template = templatefile("${path.module}/templates/slackernews_cloudformation.tftpl",
                                 {
-                                  license_function_arn = aws_lambda_function.create_license.arn
-                                  password_function_arn = aws_lambda_function.generate_password.arn
+                                  license_topic_arn = aws_sns_topic.create_license.arn
                                   user_data = indent(14, local.user_data)
                                   app_id = var.app_id
                                   application = var.application,
@@ -24,12 +23,6 @@ data "aws_iam_policy_document" "stack_policy" {
     effect = "Allow"
     actions   = [ "lambda:InvokeFunction" ]
     resources = [ aws_lambda_function.create_license.arn ]
-  }
-
-  statement {
-    effect = "Allow"
-    actions   = [ "lambda:InvokeFunction" ]
-    resources = [ aws_lambda_function.generate_password.arn ]
   }
 
   statement {

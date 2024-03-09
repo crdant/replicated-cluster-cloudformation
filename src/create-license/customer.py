@@ -4,7 +4,7 @@ import requests
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-
+logger.setLevel('DEBUG')
 
 class Customer:
 
@@ -50,16 +50,18 @@ class Customer:
         "authorization": self.api_token
     } 
 
-    # Sending the payload to the external API
+    # Sending the payload to the Vendor Portal API
     response = requests.get(get_customer_url, headers=headers)
     response.raise_for_status()
     customer_response = response.json()
     self.__dict__ = self.__dict__ | customer_response['customer']
+    logger.debug('%s', self.__dict)
     self.appId = self.channels[0]['appId']
     self.channelId = self.channels[0]['id']
     logger.debug("loaded customer {name} with id {id}".format(name=self.name,id=self.id))
 
   def save(self):
+    logger.debug('Saving customer with id ${id}'.format(id=self.id))
     save_customer_url = "https://api.replicated.com/vendor/v3/customer"
 
     headers = {
@@ -68,14 +70,16 @@ class Customer:
         "authorization": self.api_token
     } 
 
-    # Sending the payload to the external API
+    # Sending the payload to the Vendor Portal API
     request = self.__save_request()
     if ( self.id is None ):
+      logger.debug('saving new customer')
       response = requests.post(save_customer_url, headers=headers, json=request)
     else:
+      logger.debug('updating existing customer')
       response = requests.put("{prefix}/{id}".format(prefix=save_customer_url, id=self.id), headers=headers, json=request)
 
-    response.raise_for_status()
+    logger.debug(response.raise_for_status())
     customer_response = response.json()
     self.__dict__ = self.__dict__ | customer_response['customer']
     self.appId = self.channels[0]['appId']

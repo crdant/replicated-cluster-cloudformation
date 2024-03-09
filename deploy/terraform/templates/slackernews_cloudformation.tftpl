@@ -269,14 +269,11 @@ Resources:
 
 Outputs:
   InstallUri:
-    Description: URI for the embedded clustser download
+    Description: URI for the embedded cluster download
     Value: !GetAtt CreateLicense.InstallerUri
   DownloadToken:
     Description: Authorization token for installer download
     Value: !GetAtt CreateLicense.DownloadToken
-  LicenseUri:
-    Description: URI of the Replicated license file
-    Value: !GetAtt CreateLicense.LicenseFileUri
   NodePublicHostname:
     Description: Public hostname for the initial cloud instance
     Value: !GetAtt InitialNode.PublicDnsName

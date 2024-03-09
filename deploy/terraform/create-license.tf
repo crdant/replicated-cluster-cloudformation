@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "api_token" {
-  name        = "${var.application}-replicated-api-token"
+  name        = "${var.application}-replicated-vendor-api-token"
   description = "API token the Replicated Vendor Portal"
 }
 
@@ -8,29 +8,37 @@ resource "aws_secretsmanager_secret_version" "api_token" {
   secret_string = var.api_token
 }
 
-resource "aws_s3_bucket" "licenses" {
-  bucket = "slackernews-license-${random_pet.bucket_suffix.id}"
-
+# topic-backed custom resource
+resource "aws_sns_topic" "create_license" {
+  name = "create_${var.application}_license"
 }
 
-resource "aws_s3_bucket_ownership_controls" "licenses" {
-  bucket = aws_s3_bucket.licenses.id
-  rule {
-    object_ownership = "BucketOwnerPreferred"
+resource "aws_sns_topic_policy" "create_license_policy" {
+  arn    = aws_sns_topic.create_license.arn
+  policy = data.aws_iam_policy_document.create_license_policy.json
+}
+
+data "aws_iam_policy_document" "create_license_policy" {
+  statement {
+    actions = [
+      "SNS:Publish"
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    resources = [
+      aws_sns_topic.create_license.arn
+    ]
   }
 }
-resource "aws_s3_bucket_acl" "licenses" {
-  depends_on = [ aws_s3_bucket_ownership_controls.licenses ]
 
-  bucket = aws_s3_bucket.licenses.id
-  acl    = "private"
-}
-
-resource "aws_s3_bucket_versioning" "licenses" {
-  bucket = aws_s3_bucket.licenses.id
-  versioning_configuration {
-    status = "Enabled"
-  }
+resource "aws_sns_topic_subscription" "create_liceense" {
+  topic_arn = aws_sns_topic.create_license.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.create_license.arn
 }
 
 resource "aws_lambda_function" "create_license" {
@@ -49,29 +57,15 @@ resource "aws_lambda_function" "create_license" {
   environment {
     variables = {
       SECRET_ARN = aws_secretsmanager_secret.api_token.arn
-      LICENSE_BUCKET_NAME = aws_s3_bucket.licenses.bucket
-      LICENSE_BUCKET_DOMAIN = aws_s3_bucket.licenses.bucket_regional_domain_name
     }
   }
 }
 
-resource "aws_iam_policy" "lambda_license_bucket" {
-  name   = "${var.application}-license-bucket"
-  policy = data.aws_iam_policy_document.lambda_license_bucket.json
-}
-
-data "aws_iam_policy_document" "lambda_license_bucket" {
-  statement {
-    actions   = [
-      "s3:ListBucket",
-      "s3:GetObject",
-      "s3:GetObjectVersion",
-      "s3:PutObject",
-      "s3:DeleteObject",
-      "s3:PutObject",
-    ]
-    resources = [ "${aws_s3_bucket.licenses.arn}/*" ]
-  }
+resource "aws_lambda_permission" "lambda_license_topic" {
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.create_license.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.create_license.arn
 }
 
 resource "aws_iam_policy" "create_license_secrets_manager" {
@@ -88,11 +82,6 @@ data "aws_iam_policy_document" "create_license_secrets_manager" {
 
 data "aws_iam_policy" "license_lambda_exec_policy" {
   name = "AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_license_bucket" {
-  role       = aws_iam_role.license_lambda_exec_role.id
-  policy_arn = aws_iam_policy.lambda_license_bucket.arn
 }
 
 resource "aws_iam_role_policy_attachment" "create_license_secrets_manager" {

@@ -29,40 +29,6 @@ ssh_authorized_keys:
 users:
 - default
 
-write_files:
-- path: /etc/ssh/sshd_config.d/01-hardening.conf
-  content: |
-    # enable eed25519 key
-    HostKey /etc/ssh/ssh_host_ed25519_key
-    # restrict supported key exchange, cipher, and MAC algorithms
-    KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha256
-    Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-    MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com
-    HostKeyAlgorithms ssh-ed25519,ssh-ed25519-cert-v01@openssh.com,sk-ssh-ed25519@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,rsa-sha2-256,rsa-sha2-512,rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com
-    # restrict authentication mechanism
-    PasswordAuthentication yes
-    ChallengeResponseAuthentication no
-    PubkeyAuthentication yes
-  permissions: '0644'
-  owner: root:root
- 
-- path: /etc/ssh/ssh_config.d/01-hardening.conf
-  content: |
-    Host github.com
-      KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
-    Host *
-      # restrict supported key exchange, cipher, and MAC algorithms
-      KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha256
-      Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-      MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com
-      HostKeyAlgorithms ssh-ed25519,ssh-ed25519-cert-v01@openssh.com,sk-ssh-ed25519@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,rsa-sha2-256,rsa-sha2-512,rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com
-      # restrict authentication mechanism
-      PasswordAuthentication no
-      ChallengeResponseAuthentication no
-      PubkeyAuthentication yes
-  permissions: '0644'
-  owner: root:root
-
 runcmd:
 - |
   # download the latest release of the Replicated embedded cluster from GitHub and install it
@@ -73,21 +39,12 @@ runcmd:
   chown ubuntu:ubuntu ./${application}
 
 - |
-  # download the Replicated KOTS CLI, which plugs into the `kubectl` command
-  # and provides a subcommend to reset the password for the admin console
-  export REPL_INSTALL_PATH=/var/lib/embedded-cluster/bin
-  curl https://kots.io/install | bash
-
-- |
   # use the KOTS CLI to reset the admin console password`
   export PATH=$${!PATH}:/var/lib/embedded-cluster/bin
   echo "$${AdminConsolePassword}" | kubectl kots reset-password --kubeconfig /var/lib/k0s/pki/admin.conf --namespace kotsadm
 
 - |
-  # install cloud formation bootstrap scripts and signal completion
-  curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz -o /tmp/aws-cfn-bootstrap-latest.tar.gz \
-    && pip3 install /tmp/aws-cfn-bootstrap-latest.tar.gz \
-    && rm /tmp/aws-cfn-bootstrap-latest.tar.gz
+  # signal completion to CloudFormation
   /usr/local/bin/cfn-signal --success true --stack $${StackName} --resource $${ResourceName} --region $${Region}
 
   

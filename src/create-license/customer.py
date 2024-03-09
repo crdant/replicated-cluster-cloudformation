@@ -14,7 +14,7 @@ class Customer:
       self.load(app_id,id)
 
   @classmethod
-  def create(cls,api_token, name, email, app_id, expires_at, license_type, channel):
+  def create(cls,api_token, name, email, app_id, expires_at, license_type, channel, customId=""):
     logger.debug(f'creating new customer instance for {name}')
     instance = cls(api_token)
     instance.id = None
@@ -25,6 +25,7 @@ class Customer:
     instance.type = license_type
     instance.expiresAt = expires_at
     instance.channelId = instance.__get_channel_id(channel)
+    instance.customId = customId
 
     instance.isKotsInstallEnabled = True
     instance.isHelmVmDownloadEnabled = True
@@ -116,6 +117,7 @@ class Customer:
   def __save_request(self):
     request = {}
     request['name'] = self.name
+    request['custom_id'] = self.customId
     request['app_id'] = self.appId
     request['channel_id'] = self.channelId
     request['email'] = self.email

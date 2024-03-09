@@ -26,9 +26,6 @@ package: prepare
 	cd $(BUILD_DIR)/create-license && \
 		pip install -r requirements.txt -t . --upgrade && \
 		zip -r ${BUILD_DIR}/create-license.zip . 
-	cd $(BUILD_DIR)/generate-password && \
-		pip install -r requirements.txt -t . --upgrade && \
-		zip -r ${BUILD_DIR}/generate-password.zip . 
 
 # Deploy with Terraform
 plan: package

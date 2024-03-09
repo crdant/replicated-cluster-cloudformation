@@ -154,18 +154,22 @@ Resources:
   CreateLicense:
     Type: Custom::LambdaTrigger
     Properties:
-      ServiceToken: ${license_function_arn}
-      Name: !Sub '$${AWS::StackId}' 
+      ServiceToken: ${license_topic_arn}
+      Name: !Ref AWS::StackId 
+      ExternalId: !Ref AWS::AccountId
       Email: !Ref Email
       AppId: ${app_id}
       Channel: !If [ IsBeta, Beta, Stable ]
       Type: !FindInMap [ LicenseType, !Ref SubscriptionType, Type ]
 
-  GeneratePassword:
-    Type: Custom::LambdaTrigger
+  AdminConsolePassword:
+    Type: 'AWS::SecretsManager::Secret'
     Properties:
-      ServiceToken: ${password_function_arn}
-      SecretName: !Sub '$${AWS::StackName}-admin-console' 
+      Description: Simple secret created by AWS CloudFormation.
+      GenerateSecretString:
+        GenerateStringKey: password
+        SecretStringTemplate: '{"password": ""}'
+        PasswordLength: 20
 
   InitialNode:
     Type: AWS::EC2::Instance
@@ -194,7 +198,8 @@ Resources:
             - InstallerUri: !GetAtt CreateLicense.InstallerUri
               DownloadToken: !GetAtt CreateLicense.DownloadToken
               PublicKey: !Ref PublicKey
-              AdminConsolePassword: !GetAtt GeneratePassword.Password
+              AdminConsolePassword:
+                Fn::Sub: "{{resolve:secretsmanager:$${AdminConsolePassword}::password}}"
               StackName: !Ref AWS::StackName 
               ResourceName: InitialNode 
               Region: !Ref AWS::Region
@@ -278,6 +283,7 @@ Outputs:
   ConsoleUri:
     Description: URI to access the admin console of the new cluster
     Value: !Sub http://$${InitialNode.PublicIp}:30000
-  PasswordSecret:
-    Description: Secrets manager secret containing the initial Admin Console password
-    Value: !GetAtt GeneratePassword.SecretArn
+  AdminConsolePassword:
+    Description: URI to access the admin console of the new cluster
+    Value: 
+      Fn::Sub: "{{resolve:secretsmanager:$${AdminConsolePassword}::password}}"

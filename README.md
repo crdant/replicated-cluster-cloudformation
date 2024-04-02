@@ -6,6 +6,11 @@ using the Embedded Cluster and a new license specific to the cluster.
 Architecture
 ------------
 
+This repo is designed to support shipping a product with the AWS Marketplace.
+The overall architecture includes components that exist in the vendor account,
+marketplace artifacts, and eventual delivered infrastructure/software in the
+end customer account.
+
 ![Architecture diagram showing components in the vendor account, customer account, and provided by Amazon](./img/architecture.svg)
 
 Details

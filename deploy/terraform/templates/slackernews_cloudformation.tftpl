@@ -6,8 +6,6 @@ Parameters:
     Description: |
       Select an instance type for your initial cluster node
     AllowedValues:
-      - t2.2xlarge
-      - t2.xlarge
       - t3.2xlarge
       - t3.xlarge
       - t3a.2xlarge
@@ -84,69 +82,41 @@ Mappings:
     Trial:
       Type: trial
   Ami:
-    cn-northwest-1:
-      AmiId: ami-07e6c9034a08c1dbf
-    cn-north-1:
-      AmiId: ami-0b7b34ceb17dcc9fc
-    me-central-1:
-      AmiId: ami-0c139b9dae09be9e2
-    eu-central-1:
-      AmiId: ami-04b4614474c70b684
-    us-west-1:
-      AmiId: ami-0c38318f8f25527a5
-    ap-south-1:
-      AmiId: ami-0f90ab0fec3fc43f3
-    eu-north-1:
-      AmiId: ami-0459e5983f05e6617
-    il-central-1:
-      AmiId: ami-0a3e30ed291e0d7ea
-    eu-south-1:
-      AmiId: ami-0e7a221fdd9e64dac
-    af-south-1:
-      AmiId: ami-0decfbd5a093c684c
     ap-northeast-1:
-      AmiId: ami-099736a66378f9001
-    ca-west-1:
-      AmiId: ami-0432f4e0c147c0802
-    ca-central-1:
-      AmiId: ami-0c793c682dfb697a2
-    ap-east-1:
-      AmiId: ami-05d0f4f91a366f1c7
-    me-south-1:
-      AmiId: ami-0329a770f5f6d59a3
-    eu-west-1:
-      AmiId: ami-0652a081025ec9fee
-    sa-east-1:
-      AmiId: ami-0f3364e7ea49de92c
-    us-east-1:
-      AmiId: ami-0cf1810907a781f00
-    ap-southeast-1:
-      AmiId: ami-02da9706e7051f070
-    us-west-2:
-      AmiId: ami-0982d319985cb387e
-    ap-south-2:
-      AmiId: ami-004cebaa37d90ee8f
-    eu-central-2:
-      AmiId: ami-07b29705c75330df0
-    eu-west-2:
-      AmiId: ami-08e4526a271956ce2
-    eu-south-2:
-      AmiId: ami-0176060ac25de3bda
+      AmiId: ami-0433ab56bedd4ba62
     ap-northeast-2:
-      AmiId: ami-07a34fe09b79cabe9
-    us-east-2:
-      AmiId: ami-0265ca2039df27f61
-    ap-southeast-2:
-      AmiId: ami-0c753d8771a18f619
-    eu-west-3:
-      AmiId: ami-0d64d778de0fdce8d
+      AmiId: ami-07d6a79d29f68e588
     ap-northeast-3:
-      AmiId: ami-0dc058c69dc03aab0
-    ap-southeast-3:
-      AmiId: ami-0a5b89748767645f4
-    ap-southeast-4:
-      AmiId: ami-08ebbe38fdf98b63a
- 
+      AmiId: ami-041408d2aa275c161
+    ap-south-1:
+      AmiId: ami-02b468ffcbc301e63
+    ap-southeast-1:
+      AmiId: ami-05df8ebfda43f3fae
+    ap-southeast-2:
+      AmiId: ami-06aa4bfb58e6b7d70
+    ca-central-1:
+      AmiId: ami-0c75652db9c9ba7a8
+    eu-central-1:
+      AmiId: ami-08a6c168d7aa87d28
+    eu-north-1:
+      AmiId: ami-0defe84dd3cc364e3
+    eu-west-1:
+      AmiId: ami-0966d87f8eed3531e
+    eu-west-2:
+      AmiId: ami-02122a55d9c2f2c96
+    eu-west-3:
+      AmiId: ami-0cc0349d63eb0474a
+    sa-east-1:
+      AmiId: ami-05c5b4b22591903dd
+    us-east-1:
+      AmiId: ami-06ca1f5767c9f0234
+    us-east-2:
+      AmiId: ami-02b21560eb53d97db
+    us-west-1:
+      AmiId: ami-0abd8c17b7fb52821
+    us-west-2:
+      AmiId: ami-032b5e454f0258a80
+
 Conditions:
   IsBeta: !Equals [ BetaProgram, "Yes" ]
 
@@ -154,18 +124,48 @@ Resources:
   CreateLicense:
     Type: Custom::LambdaTrigger
     Properties:
-      ServiceToken: ${license_function_arn}
-      Name: !Sub '$${AWS::StackId}' 
+      ServiceToken: ${license_topic_arn}
+      Name: !Ref AWS::StackId 
+      ExternalId: !Ref AWS::AccountId
       Email: !Ref Email
       AppId: ${app_id}
       Channel: !If [ IsBeta, Beta, Stable ]
       Type: !FindInMap [ LicenseType, !Ref SubscriptionType, Type ]
 
-  GeneratePassword:
-    Type: Custom::LambdaTrigger
+  AdminConsolePassword:
+    Type: 'AWS::SecretsManager::Secret'
     Properties:
-      ServiceToken: ${password_function_arn}
-      SecretName: !Sub '$${AWS::StackName}-admin-console' 
+      Description: Simple secret created by AWS CloudFormation.
+      GenerateSecretString:
+        ExcludeCharacters: "\"'"
+        PasswordLength: 20
+
+  AdminConsoleAccessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Path: '/'
+      Policies:
+        - PolicyName: 'SecretsManagerAccess'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: 'secretsmanager:GetSecretValue'
+                Resource: !Ref AdminConsolePassword  
+
+  AdminConsoleAccessProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: '/'
+      Roles:
+        - !Ref AdminConsoleAccessRole
 
   InitialNode:
     Type: AWS::EC2::Instance
@@ -175,6 +175,7 @@ Resources:
     Properties:
       ImageId: !FindInMap [ Ami, !Ref AWS::Region, AmiId ]
       InstanceType: !Ref InstanceType   
+      IamInstanceProfile: !Ref AdminConsoleAccessProfile
       SubnetId: !Ref ClusterSubnet
       SecurityGroupIds:
         - Fn::GetAtt:
@@ -194,7 +195,7 @@ Resources:
             - InstallerUri: !GetAtt CreateLicense.InstallerUri
               DownloadToken: !GetAtt CreateLicense.DownloadToken
               PublicKey: !Ref PublicKey
-              AdminConsolePassword: !GetAtt GeneratePassword.Password
+              AdminConsolePasswordArn: !Ref AdminConsolePassword
               StackName: !Ref AWS::StackName 
               ResourceName: InitialNode 
               Region: !Ref AWS::Region
@@ -264,20 +265,14 @@ Resources:
 
 Outputs:
   InstallUri:
-    Description: URI for the embedded clustser download
+    Description: URI for the embedded cluster download
     Value: !GetAtt CreateLicense.InstallerUri
   DownloadToken:
     Description: Authorization token for installer download
     Value: !GetAtt CreateLicense.DownloadToken
-  LicenseUri:
-    Description: URI of the Replicated license file
-    Value: !GetAtt CreateLicense.LicenseFileUri
   NodePublicHostname:
     Description: Public hostname for the initial cloud instance
     Value: !GetAtt InitialNode.PublicDnsName
   ConsoleUri:
     Description: URI to access the admin console of the new cluster
     Value: !Sub http://$${InitialNode.PublicIp}:30000
-  PasswordSecret:
-    Description: Secrets manager secret containing the initial Admin Console password
-    Value: !GetAtt GeneratePassword.SecretArn

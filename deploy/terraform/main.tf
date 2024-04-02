@@ -7,8 +7,7 @@ locals {
                           )
   cloudformation_template = templatefile("${path.module}/templates/slackernews_cloudformation.tftpl",
                                 {
-                                  license_function_arn = aws_lambda_function.create_license.arn
-                                  password_function_arn = aws_lambda_function.generate_password.arn
+                                  license_topic_arn = aws_sns_topic.create_license.arn
                                   user_data = indent(14, local.user_data)
                                   app_id = var.app_id
                                   application = var.application,
@@ -24,12 +23,6 @@ data "aws_iam_policy_document" "stack_policy" {
     effect = "Allow"
     actions   = [ "lambda:InvokeFunction" ]
     resources = [ aws_lambda_function.create_license.arn ]
-  }
-
-  statement {
-    effect = "Allow"
-    actions   = [ "lambda:InvokeFunction" ]
-    resources = [ aws_lambda_function.generate_password.arn ]
   }
 
   statement {
@@ -107,6 +100,14 @@ resource "aws_s3_bucket" "template_bucket" {
   bucket = "slackernews-cf-${random_pet.bucket_suffix.id}"
 }
 
+resource "aws_s3_bucket_public_access_block" "template_bucket" {
+  bucket = aws_s3_bucket.template_bucket.id
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 resource "aws_s3_bucket_versioning" "template_bucket" {
   bucket = aws_s3_bucket.template_bucket.id
   versioning_configuration {
@@ -117,6 +118,7 @@ resource "aws_s3_bucket_versioning" "template_bucket" {
 resource "aws_s3_object" "cloudformation_template" {
   bucket = aws_s3_bucket.template_bucket.id
   key    = "slackernews_cloudformation.yaml"
+  acl    = "public-read"
 
   content_type = "text/yaml"
   content      = local.cloudformation_template

@@ -43,15 +43,17 @@ Usage
 -----
 
 Uses `make all` to create the necessary assets. It will prompt you for the id
-for your applcation on the [Vendor Portal](https://vendor.replicated.com). If you don't know it, you can find it
-  with either `replicated app ls` or by going to the [Vendor Portal](https://vendor.replicated.com) and looking
-  at the settings for you application. Be sure to use the ID and not the slug.
+for your applcation on the [Vendor Portal](https://vendor.replicated.com). If
+you don't know it, you can find it with either `replicated app ls` or by going 
+to the [Vendor Portal](https://vendor.replicated.com) and looking at the 
+settings for you application. Be sure to use the ID and not the slug.
 
 You can then go to the [AWS Console](https://console.aws.amazon.com) and create
 a CloudFormmation stack using the deployed template. The template URL will be
 in the Terraform output.
 
 ## Makefile reference
+
 | target | purpose |
 |--------|----------|
 | all     | create the lambda function for the custom resource and store the CloudFormation template in s3, same a `deploy` |

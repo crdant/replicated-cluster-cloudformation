@@ -1,6 +1,12 @@
-# replicated-license-cloudformation
+# Replicated Cluster Cloudformation Demo
    
-Implements a CloudFormation template the manages a Replicated license
+Implements a CloudFormation template the manages a Replicated installation
+using the Embedded Cluster and a new license specific to the cluster.
+
+Architecture
+------------
+
+![Architecture diagram showing components in the vendor account, customer account, and provided by Amazon](./img/architecture.svg)
 
 Details
 -------
@@ -13,18 +19,18 @@ Replicated Embedded Cluster AMI will enable selling your product in
 the Marketplace.
 
 The license is handled as a custom resource in CloudFormation. It uses
-the Replicated customer ID as the resource ID to faciliatte managing the
+the Replicated customer ID as the resource ID to faciliate managing the
 lifecycle of the customer entirely within CloudFormation. The template
 invokes a lambda function to manage the custom resource.
 
-The lambda function is written in Python and use the `crhelper` module provided
-by Amazon to clean up the code. Their is a class `Customer` that manages the
-customer and uses the [Replicated Vendor Portal
-API](https://replicated-vendor-api.readme.io/reference) to create,
-load, and delete customers. Update is not yet implemented.
+The lambda function is written in Python and is invoked via an SNS topic to
+ppallow it to run in the software vendor's AWS account. Their is a class
+`Customer` that manages the customer and uses the [Replicated Vendor Portal
+API](https://replicated-vendor-api.readme.io/reference) to create, load, and
+delete customers. Update is not yet implemented.
 
 The CloudFormation template is stored in an S3 bucket so it's avaialble
-for creating new stacks. The S3 bucket and the lamdba function as both
+for creating new stacks. The S3 bucket and the lamdba function are both
 managed with Terraform, along with a role and policy for the stack
 execution.
 

@@ -40,7 +40,7 @@ def dispatch(message):
     elif message['RequestType'] == 'Delete':
       response = delete(message)
     else:
-      response = Response(None, 'fAILED', 'Operation not supported', message)
+      response = Response(None, 'FAILED', 'Operation not supported', message)
   except Exception as e:
     logging.error(str(e))
     response = Response(None, 'FAILED', str(e), message)
@@ -63,7 +63,6 @@ def create(message):
     logger.info("creating resoource")
 
     api_token = get_api_token()
-    logger.debug("receiving message")
     properties = message.get('ResourceProperties')
     logger.debug("Loading application")
     app = App(api_token, properties.get('AppId'))

@@ -100,6 +100,14 @@ resource "aws_s3_bucket" "template_bucket" {
   bucket = "slackernews-cf-${random_pet.bucket_suffix.id}"
 }
 
+resource "aws_s3_bucket_public_access_block" "template_bucket" {
+  bucket = aws_s3_bucket.template_bucket.id
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 resource "aws_s3_bucket_versioning" "template_bucket" {
   bucket = aws_s3_bucket.template_bucket.id
   versioning_configuration {
@@ -110,6 +118,7 @@ resource "aws_s3_bucket_versioning" "template_bucket" {
 resource "aws_s3_object" "cloudformation_template" {
   bucket = aws_s3_bucket.template_bucket.id
   key    = "slackernews_cloudformation.yaml"
+  acl    = "public-read"
 
   content_type = "text/yaml"
   content      = local.cloudformation_template

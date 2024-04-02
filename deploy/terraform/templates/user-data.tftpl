@@ -13,18 +13,12 @@
 chpasswd:
   expire: false
 
-packages:
-- ca-certificates
-- curl
-- jq
-- python3-pip
-
 # Update apt database and upgrade packages on first boot
 package_update: true
 package_upgrade: true
 
 ssh_authorized_keys:
-- $${PublicKey}}
+- $${PublicKey}
 
 users:
 - default
@@ -39,9 +33,16 @@ runcmd:
   chown ubuntu:ubuntu ./${application}
 
 - |
-  # use the KOTS CLI to reset the admin console password`
+  # use the KOTS CLI to reset the admin console password to the generated password
   export PATH=$${!PATH}:/var/lib/embedded-cluster/bin
-  echo "$${AdminConsolePassword}" | kubectl kots reset-password --kubeconfig /var/lib/k0s/pki/admin.conf --namespace kotsadm
+  password=$(python3 - <<SCRIPT 
+  import boto3; 
+  secrets_manager = boto3.client('secretsmanager', '$${AWS::Region}')
+  password = secrets_manager.get_secret_value(SecretId='$${AdminConsolePassword}')['SecretString']
+  print(password)
+  SCRIPT
+  )
+  echo $${!password} | kubectl kots reset-password --kubeconfig /var/lib/k0s/pki/admin.conf --namespace kotsadm
 
 - |
   # signal completion to CloudFormation

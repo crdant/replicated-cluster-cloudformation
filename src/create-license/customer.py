@@ -56,7 +56,6 @@ class Customer:
     response.raise_for_status()
     customer_response = response.json()
     self.__dict__ = self.__dict__ | customer_response['customer']
-    logger.debug('%s', self.__dict)
     self.appId = self.channels[0]['appId']
     self.channelId = self.channels[0]['id']
     logger.debug("loaded customer {name} with id {id}".format(name=self.name,id=self.id))
@@ -97,7 +96,9 @@ class Customer:
 
     # Sending the payload to the external API
     response = requests.post(archive_customer_url, headers=headers, json=self.__dict__)
-    response.raise_for_status()
+    logger.debug(response.raise_for_status())
+    logger.debug('%s', self.__dict__)
+    logger.debug('%s', response)
 
   def license(self):
     get_license_url = "https://api.replicated.com/vendor/v3/app/{app}/customer/{customer}/license-download".format(

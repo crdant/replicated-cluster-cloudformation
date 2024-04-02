@@ -83,40 +83,40 @@ Mappings:
       Type: trial
   Ami:
     ap-northeast-1:
-      AmiId: ami-0e63290ea32fae701
+      AmiId: ami-0433ab56bedd4ba62
     ap-northeast-2:
-      AmiId: ami-027a0900996682fb5
+      AmiId: ami-07d6a79d29f68e588
     ap-northeast-3:
-      AmiId: ami-0b60daa2dd0d92719
+      AmiId: ami-041408d2aa275c161
     ap-south-1:
-      AmiId: ami-03476beb7adca5d47
+      AmiId: ami-02b468ffcbc301e63
     ap-southeast-1:
-      AmiId: ami-0eb15ecbeb62a5e8d
+      AmiId: ami-05df8ebfda43f3fae
     ap-southeast-2:
-      AmiId: ami-0b58c31a0bfec61de
+      AmiId: ami-06aa4bfb58e6b7d70
     ca-central-1:
-      AmiId: ami-0adbc50bf995cb9e4
+      AmiId: ami-0c75652db9c9ba7a8
     eu-central-1:
-      AmiId: ami-051d0a8b4504802c0
+      AmiId: ami-08a6c168d7aa87d28
     eu-north-1:
-      AmiId: ami-0dc4ec17a26ae1df3
+      AmiId: ami-0defe84dd3cc364e3
     eu-west-1:
-      AmiId: ami-0ddcca263593fe15a
+      AmiId: ami-0966d87f8eed3531e
     eu-west-2:
-      AmiId: ami-09606c76a2e537157
+      AmiId: ami-02122a55d9c2f2c96
     eu-west-3:
-      AmiId: ami-0334b2fc8dc06e2b7
+      AmiId: ami-0cc0349d63eb0474a
     sa-east-1:
-      AmiId: ami-04e05f0cb4bf4ffea
+      AmiId: ami-05c5b4b22591903dd
     us-east-1:
-      AmiId: ami-0393318d9bcd4cabf
+      AmiId: ami-06ca1f5767c9f0234
     us-east-2:
-      AmiId: ami-076775695047dad90
+      AmiId: ami-02b21560eb53d97db
     us-west-1:
-      AmiId: ami-0ef3c46b52d6a6535
+      AmiId: ami-0abd8c17b7fb52821
     us-west-2:
-      AmiId: ami-070eabec82afba87d
- 
+      AmiId: ami-032b5e454f0258a80
+
 Conditions:
   IsBeta: !Equals [ BetaProgram, "Yes" ]
 
@@ -137,9 +137,35 @@ Resources:
     Properties:
       Description: Simple secret created by AWS CloudFormation.
       GenerateSecretString:
-        GenerateStringKey: password
-        SecretStringTemplate: '{"password": ""}'
+        ExcludeCharacters: "\"'"
         PasswordLength: 20
+
+  AdminConsoleAccessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Path: '/'
+      Policies:
+        - PolicyName: 'SecretsManagerAccess'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: 'secretsmanager:GetSecretValue'
+                Resource: !Ref AdminConsolePassword  
+
+  AdminConsoleAccessProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: '/'
+      Roles:
+        - !Ref AdminConsoleAccessRole
 
   InitialNode:
     Type: AWS::EC2::Instance
@@ -149,6 +175,7 @@ Resources:
     Properties:
       ImageId: !FindInMap [ Ami, !Ref AWS::Region, AmiId ]
       InstanceType: !Ref InstanceType   
+      IamInstanceProfile: !Ref AdminConsoleAccessProfile
       SubnetId: !Ref ClusterSubnet
       SecurityGroupIds:
         - Fn::GetAtt:
@@ -168,8 +195,7 @@ Resources:
             - InstallerUri: !GetAtt CreateLicense.InstallerUri
               DownloadToken: !GetAtt CreateLicense.DownloadToken
               PublicKey: !Ref PublicKey
-              AdminConsolePassword:
-                Fn::Sub: "{{resolve:secretsmanager:$${AdminConsolePassword}::password}}"
+              AdminConsolePasswordArn: !Ref AdminConsolePassword
               StackName: !Ref AWS::StackName 
               ResourceName: InitialNode 
               Region: !Ref AWS::Region
@@ -250,7 +276,3 @@ Outputs:
   ConsoleUri:
     Description: URI to access the admin console of the new cluster
     Value: !Sub http://$${InitialNode.PublicIp}:30000
-  AdminConsolePassword:
-    Description: URI to access the admin console of the new cluster
-    Value: 
-      Fn::Sub: "{{resolve:secretsmanager:$${AdminConsolePassword}::password}}"

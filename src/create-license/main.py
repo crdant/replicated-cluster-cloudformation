@@ -42,10 +42,13 @@ def dispatch(message):
     elif message['RequestType'] == 'Delete':
       response = delete(message)
     else:
-      response = Response(None, 'FAILED', 'Operation not supported', message)
+      # generate a uuid as a resource id since the customer wasn't created
+      id = str(uuid.uuid4())
+      response = Response(id, 'FAILED', 'Operation not supported', message)
   except Exception as e:
     logging.error(str(e))
-    response = Response(None, 'FAILED', str(e), message)
+    id = str(uuid.uuid4())
+    response = Response(id, 'FAILED', str(e), message)
   return response
 
 def send_response(response):
@@ -95,6 +98,11 @@ def create(message):
       return response
 
 def delete(message):
+    # return success right away if the physical resource id is a UUID since 
+    # that means the customer was never created and there's nothing to do
+    if __is_valid_uuid(message['PhysicalResourceId']):
+        return Response(message['PhysicalResourceId'], 'SUCCESS', '', message)
+
     customerId = message['PhysicalResourceId']
     logger.info("deleting customer: {customer}".format(customer=customerId))
     api_token = get_api_token()
@@ -105,3 +113,9 @@ def delete(message):
 
     return Response(customer.id, 'SUCCESS', '', message)
 
+def __is_valid_uuid(value):
+    try:
+      uuid.UUID(value)
+      return True
+    except ValueError:
+      return False

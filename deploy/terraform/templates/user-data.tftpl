@@ -26,11 +26,9 @@ users:
 runcmd:
 - |
   # download the latest release of the Replicated embedded cluster from GitHub and install it
-  cd /home/ubuntu
-  curl $${InstallerUri} -H "Authorization: $${DownloadToken}" \
-      | tar -xzf - \
-    && ./${application} install --license ./license.yaml --no-prompt
-  chown ubuntu:ubuntu ./${application}
+  curl -fL -o /home/ubuntu/license.yaml '$${LicenseUri}' 
+  chown ubuntu:ubuntu /home/ubuntu/license.yaml
+  /home/ubuntu/${application} install --license /home/ubuntu/license.yaml --airgap-bundle /home/ubuntu/${application}.airgap --no-prompt 
 
 - |
   # use the KOTS CLI to reset the admin console password to the generated password

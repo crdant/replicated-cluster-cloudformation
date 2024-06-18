@@ -201,8 +201,7 @@ Resources:
           Fn::Sub:
             - |
               ${user_data}
-            - InstallerUri: !GetAtt CreateLicense.InstallerUri
-              DownloadToken: !GetAtt CreateLicense.DownloadToken
+            - LicenseUri: !GetAtt CreateLicense.LicenseUri
               PublicKey: !Ref PublicKey
               AdminConsolePasswordArn: !Ref AdminConsolePassword
               StackName: !Ref AWS::StackName 
@@ -273,15 +272,12 @@ Resources:
           ToPort: '443'
 
 Outputs:
-  InstallUri:
-    Description: URI for the embedded cluster download
-    Value: !GetAtt CreateLicense.InstallerUri
-  DownloadToken:
-    Description: Authorization token for installer download
-    Value: !GetAtt CreateLicense.DownloadToken
   NodePublicHostname:
     Description: Public hostname for the initial cloud instance
     Value: !GetAtt InitialNode.PublicDnsName
   ConsoleUri:
     Description: URI to access the admin console of the new cluster
     Value: !Sub http://$${InitialNode.PublicIp}:30000
+  LicenseUri:
+    Description: URI to download the license file, expirese after 10 minutes
+    Value: !GetAtt CreateLicense.LicenseUri 

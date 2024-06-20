@@ -7,7 +7,23 @@ locals {
                           )
   cloudformation_template = templatefile("${path.module}/templates/slackernews_cloudformation.tftpl",
                                 {
-                                  license_topic_arn = module.create_license_us_west_2.topic_arn
+                                  license_topic_ap_northeast_1 = module.create_license_ap_northeast_1.topic_arn
+                                  license_topic_ap_northeast_2 = module.create_license_ap_northeast_2.topic_arn
+                                  license_topic_ap_northeast_3 = module.create_license_ap_northeast_3.topic_arn
+                                  license_topic_ap_south_1 = module.create_license_ap_south_1.topic_arn
+                                  license_topic_ap_southeast_1 = module.create_license_ap_southeast_1.topic_arn
+                                  license_topic_ap_southeast_2 = module.create_license_ap_southeast_2.topic_arn
+                                  license_topic_ca_central_1 = module.create_license_ca_central_1.topic_arn
+                                  license_topic_eu_central_1 = module.create_license_eu_central_1.topic_arn
+                                  license_topic_eu_north_1 = module.create_license_eu_north_1.topic_arn
+                                  license_topic_eu_west_1 = module.create_license_eu_west_1.topic_arn
+                                  license_topic_eu_west_2 = module.create_license_eu_west_2.topic_arn
+                                  license_topic_eu_west_3 = module.create_license_eu_west_3.topic_arn
+                                  license_topic_sa_east_1 = module.create_license_sa_east_1.topic_arn
+                                  license_topic_us_east_1 = module.create_license_us_east_1.topic_arn
+                                  license_topic_us_east_2 = module.create_license_us_east_2.topic_arn
+                                  license_topic_us_west_1 = module.create_license_us_west_1.topic_arn
+                                  license_topic_us_west_2 = module.create_license_us_west_2.topic_arn
                                   user_data = indent(14, local.user_data)
                                   app_id = var.app_id
                                   application = var.application,

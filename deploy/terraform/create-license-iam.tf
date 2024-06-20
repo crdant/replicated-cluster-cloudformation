@@ -1,33 +1,3 @@
-output "custom_resource_function_arn" {
-  value = module.create_license_us_west_2.function_arn
-}
-
-output "custom_resource_topic_arn" {
-  value = module.create_license_us_west_2.topic_arn
-}
-
-resource "aws_sns_topic_policy" "create_license_policy" {
-  arn    = module.create_license_us_west_2.topic_arn
-  policy = data.aws_iam_policy_document.create_license_policy.json
-}
-
-data "aws_iam_policy_document" "create_license_policy" {
-  statement {
-    actions = [
-      "SNS:Publish"
-    ]
-
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-
-    resources = [
-      module.create_license_us_west_2.topic_arn
-    ]
-  }
-}
-
 resource "aws_iam_policy" "create_license_secrets_manager" {
   name   = "create-${var.application}-license-secrets_manager"
   policy = data.aws_iam_policy_document.create_license_secrets_manager.json
@@ -36,7 +6,25 @@ resource "aws_iam_policy" "create_license_secrets_manager" {
 data "aws_iam_policy_document" "create_license_secrets_manager" {
   statement {
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [aws_secretsmanager_secret.api_token.arn]
+    resources = [
+      module.create_license_ap_northeast_1.api_token_arn,
+      module.create_license_ap_northeast_2.api_token_arn,
+      module.create_license_ap_northeast_3.api_token_arn,
+      module.create_license_ap_south_1.api_token_arn,
+      module.create_license_ap_southeast_1.api_token_arn,
+      module.create_license_ap_southeast_2.api_token_arn,
+      module.create_license_ca_central_1.api_token_arn,
+      module.create_license_eu_central_1.api_token_arn,
+      module.create_license_eu_north_1.api_token_arn,
+      module.create_license_eu_west_1.api_token_arn,
+      module.create_license_eu_west_2.api_token_arn,
+      module.create_license_eu_west_3.api_token_arn,
+      module.create_license_sa_east_1.api_token_arn,
+      module.create_license_us_east_1.api_token_arn,
+      module.create_license_us_east_2.api_token_arn,
+      module.create_license_us_west_1.api_token_arn,
+      module.create_license_us_west_2.api_token_arn,
+    ]
   }
 }
 

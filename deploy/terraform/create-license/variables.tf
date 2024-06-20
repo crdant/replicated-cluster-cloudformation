@@ -18,8 +18,8 @@ variable "owner" {
   type        = string
 }
 
-variable "api_token_arn" {
-  description = "The ARN of the secret in AWS Secrets Manager containing the Replicated Vendor Portal API token"
+variable "api_token" {
+  description = "The Replicated Vendor Portal API token"
   type        = string
 }
 

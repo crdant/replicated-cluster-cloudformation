@@ -90,6 +90,41 @@ Mappings:
       Type: prod
     Trial:
       Type: trial
+  LicenseTopic:
+    ap-northeast-1:
+      Arn: ${license_topic_ap_northeast_1}
+    ap-northeast-2:
+      Arn: ${license_topic_ap_northeast_2}
+    ap-northeast-3:
+      Arn: ${license_topic_ap_northeast_3}
+    ap-south-1:
+      Arn: ${license_topic_ap_south_1}
+    ap-southeast-1:
+      Arn: ${license_topic_ap_southeast_1}
+    ap-southeast-2:
+      Arn: ${license_topic_ap_southeast_2}
+    ca-central-1:
+      Arn: ${license_topic_ca_central_1}
+    eu-central-1:
+      Arn: ${license_topic_eu_central_1}
+    eu-north-1:
+      Arn: ${license_topic_eu_north_1}
+    eu-west-1:
+      Arn: ${license_topic_eu_west_1}
+    eu-west-2:
+      Arn: ${license_topic_eu_west_2}
+    eu-west-3:
+      Arn: ${license_topic_eu_west_3}
+    sa-east-1:
+      Arn: ${license_topic_sa_east_1}
+    us-east-1:
+      Arn: ${license_topic_us_east_1}
+    us-east-2:
+      Arn: ${license_topic_us_east_2}
+    us-west-1:
+      Arn: ${license_topic_us_west_1}
+    us-west-2:
+      Arn: ${license_topic_us_west_2}
   Ami:
     ap-northeast-1:
       AmiId: ami-0ea54800728c521f7
@@ -133,8 +168,8 @@ Resources:
   CreateLicense:
     Type: Custom::LambdaTrigger
     Properties:
-      ServiceToken: ${license_topic_arn}
-      Name: !Ref AWS::StackId 
+      ServiceToken: !FindInMap [ LicenseTopic, !Ref AWS::Region, Arn ]
+      Name: !Join [ "", ["AWS Marketplace (Region ", !Ref AWS::Region, ", Account: ", !Ref AWS::AccountId, ")" ]]
       ExternalId: !Ref AWS::AccountId
       Email: !Ref Email
       AppId: ${app_id}
@@ -279,5 +314,5 @@ Outputs:
     Description: URI to access the admin console of the new cluster
     Value: !Sub http://$${InitialNode.PublicIp}:30000
   LicenseUri:
-    Description: URI to download the license file, expirese after 10 minutes
+    Description: URI to download the license file, expires after 10 minutes
     Value: !GetAtt CreateLicense.LicenseUri 

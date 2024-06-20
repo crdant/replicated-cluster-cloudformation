@@ -1,3 +1,13 @@
+resource "aws_secretsmanager_secret" "api_token" {
+  name        = "${var.application}-replicated-vendor-api-token"
+  description = "API token the Replicated Vendor Portal"
+}
+
+resource "aws_secretsmanager_secret_version" "api_token" {
+  secret_id     = aws_secretsmanager_secret.api_token.id
+  secret_string = var.api_token
+}
+
 # topic-backed custom resource
 resource "aws_sns_topic" "create_license" {
   name = "create_${var.application}_license"
@@ -24,7 +34,7 @@ resource "aws_lambda_function" "create_license" {
 
   environment {
     variables = {
-      SECRET_ARN = var.api_token_arn
+      SECRET_ARN = aws_secretsmanager_secret.api_token.arn
       LICENSE_BUCKET_NAME = var.license_bucket_name
     }
   }
@@ -35,5 +45,28 @@ resource "aws_lambda_permission" "lambda_license_topic" {
   function_name = aws_lambda_function.create_license.function_name
   principal     = "sns.amazonaws.com"
   source_arn    = aws_sns_topic.create_license.arn
+}
+
+data "aws_iam_policy_document" "create_license_policy" {
+  statement {
+    actions = [
+      "SNS:Publish"
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    resources = [
+      aws_sns_topic.create_license.arn
+    ]
+  }
+}
+
+
+resource "aws_sns_topic_policy" "create_license_policy" {
+  arn    = aws_sns_topic.create_license.arn
+  policy = data.aws_iam_policy_document.create_license_policy.json
 }
 

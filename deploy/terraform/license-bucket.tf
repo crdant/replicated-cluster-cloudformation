@@ -9,6 +9,7 @@ resource "aws_s3_bucket_ownership_controls" "licenses" {
     object_ownership = "BucketOwnerPreferred"
   }
 }
+
 resource "aws_s3_bucket_acl" "licenses" {
   depends_on = [ aws_s3_bucket_ownership_controls.licenses ]
 

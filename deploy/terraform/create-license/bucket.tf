@@ -1,6 +1,9 @@
+resource "random_pet" "bucket_suffix" {
+  length = 2
+}
+
 resource "aws_s3_bucket" "licenses" {
   bucket = "slackernews-license-${random_pet.bucket_suffix.id}"
-
 }
 
 resource "aws_s3_bucket_ownership_controls" "licenses" {

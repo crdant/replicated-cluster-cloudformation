@@ -7,13 +7,14 @@ locals {
                           )
   cloudformation_template = templatefile("${path.module}/templates/slackernews_cloudformation.tftpl",
                                 {
-                                  license_topic_arn = aws_sns_topic.create_license.arn
+                                  license_topic_arn = module.create_license_us_west_2.topic_arn
                                   user_data = indent(14, local.user_data)
                                   app_id = var.app_id
                                   application = var.application,
                                 }
                              )
 }
+
 resource "random_pet" "bucket_suffix" {
   length = 2
 }
@@ -22,7 +23,7 @@ data "aws_iam_policy_document" "stack_policy" {
   statement {
     effect = "Allow"
     actions   = [ "lambda:InvokeFunction" ]
-    resources = [ aws_lambda_function.create_license.arn ]
+    resources = [ module.create_license_us_west_2.function_arn ]
   }
 
   statement {

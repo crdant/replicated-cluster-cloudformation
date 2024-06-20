@@ -3,10 +3,14 @@ variable "build_directory" {
   type        = string
 }
 
-variable "aws_region" {
-  description = "AWS region to deploy resources"
+variable "license_bucket_name" {
+  description = "The name of the S3 bucket to store licenses in after the customer is created"
   type        = string
-  default     = "us-west-2"  # You can set a default value or leave it empty
+}
+
+variable "role" {
+  description = "The ARN of the IAM role to be assumed by the lambda function"
+  type        = string
 }
 
 variable "owner" {
@@ -14,8 +18,8 @@ variable "owner" {
   type        = string
 }
 
-variable "api_token" {
-  description = "The Replicated Vendor Portal API token to be stored in AWS Secrets Manager"
+variable "api_token_arn" {
+  description = "The ARN of the secret in AWS Secrets Manager containing the Replicated Vendor Portal API token"
   type        = string
 }
 

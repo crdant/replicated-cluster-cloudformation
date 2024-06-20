@@ -1,5 +1,13 @@
+output "custom_resource_function_arn" {
+  value = module.create_license_us_west_2.function_arn
+}
+
+output "custom_resource_topic_arn" {
+  value = module.create_license_us_west_2.topic_arn
+}
+
 resource "aws_sns_topic_policy" "create_license_policy" {
-  arn    = aws_sns_topic.create_license.arn
+  arn    = module.create_license_us_west_2.topic_arn
   policy = data.aws_iam_policy_document.create_license_policy.json
 }
 
@@ -15,7 +23,7 @@ data "aws_iam_policy_document" "create_license_policy" {
     }
 
     resources = [
-      aws_sns_topic.create_license.arn
+      module.create_license_us_west_2.topic_arn
     ]
   }
 }

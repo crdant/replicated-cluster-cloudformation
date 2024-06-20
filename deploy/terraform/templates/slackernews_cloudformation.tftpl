@@ -180,7 +180,7 @@ Resources:
     Type: AWS::EC2::Instance
     CreationPolicy:
       ResourceSignal:
-        Timeout: 'PT15M'
+        Timeout: 'PT25M'
     Properties:
       ImageId: !FindInMap [ Ami, !Ref AWS::Region, AmiId ]
       InstanceType: !Ref InstanceType   

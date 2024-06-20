@@ -44,4 +44,4 @@ class License:
     return s3.generate_presigned_url('get_object',
                                      Params={'Bucket': self.bucket_name,
                                              'Key': self.object_key},
-                                     ExpiresIn=60*20)
+                                     ExpiresIn=60*40)

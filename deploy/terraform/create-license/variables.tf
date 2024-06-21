@@ -3,11 +3,6 @@ variable "build_directory" {
   type        = string
 }
 
-variable "license_bucket_name" {
-  description = "The name of the S3 bucket to store licenses in after the customer is created"
-  type        = string
-}
-
 variable "role" {
   description = "The ARN of the IAM role to be assumed by the lambda function"
   type        = string

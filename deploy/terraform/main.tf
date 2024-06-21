@@ -6,7 +6,6 @@ module "create_license_ap_northeast_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -23,7 +22,6 @@ module "create_license_ap_northeast_2" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -40,7 +38,6 @@ module "create_license_ap_northeast_3" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -57,7 +54,6 @@ module "create_license_ap_south_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -74,7 +70,6 @@ module "create_license_ap_southeast_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -91,7 +86,6 @@ module "create_license_ap_southeast_2" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -108,7 +102,6 @@ module "create_license_ca_central_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -125,7 +118,6 @@ module "create_license_eu_central_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -142,7 +134,6 @@ module "create_license_eu_north_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -159,7 +150,6 @@ module "create_license_eu_west_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -176,7 +166,6 @@ module "create_license_eu_west_2" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -193,7 +182,6 @@ module "create_license_eu_west_3" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -210,7 +198,6 @@ module "create_license_sa_east_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -227,7 +214,6 @@ module "create_license_us_east_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -244,7 +230,6 @@ module "create_license_us_east_2" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -261,7 +246,6 @@ module "create_license_us_west_1" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 
@@ -278,7 +262,6 @@ module "create_license_us_west_2" {
 
   owner = var.owner
   build_directory = var.build_directory
-  license_bucket_name = aws_s3_bucket.licenses.bucket
   role = aws_iam_role.license_lambda_exec_role.arn
   api_token = var.api_token
 

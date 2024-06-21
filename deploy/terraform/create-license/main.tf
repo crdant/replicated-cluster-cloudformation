@@ -35,7 +35,7 @@ resource "aws_lambda_function" "create_license" {
   environment {
     variables = {
       SECRET_ARN = aws_secretsmanager_secret.api_token.arn
-      LICENSE_BUCKET_NAME = var.license_bucket_name
+      LICENSE_BUCKET_NAME = aws_s3_bucket.licenses.bucket
     }
   }
 }

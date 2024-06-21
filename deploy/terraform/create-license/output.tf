@@ -9,3 +9,7 @@ output "topic_arn" {
 output "api_token_arn" {
   value = aws_secretsmanager_secret.api_token.arn
 }
+
+output "license_bucket_arn" {
+  value = aws_s3_bucket.licenses.arn
+}

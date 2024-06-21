@@ -165,7 +165,7 @@ Conditions:
   IsBeta: !Equals [ BetaProgram, "Yes" ]
 
 Resources:
-  CreateLicense:
+  License:
     Type: Custom::LambdaTrigger
     Properties:
       ServiceToken: !FindInMap [ LicenseTopic, !Ref AWS::Region, Arn ]

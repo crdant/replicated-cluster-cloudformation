@@ -2,7 +2,11 @@ import os
 import logging
 
 import boto3
-s3 = boto3.client('s3')
+from botocore.client import Config
+
+region_name = os.environ["AWS_REGION"]
+session = boto3.session.Session(region_name=region_name)
+s3 = session.client('s3', config=Config(region_name=region_name, signature_version='s3v4'))
 
 import requests
 

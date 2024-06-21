@@ -59,3 +59,44 @@ resource "aws_iam_role" "license_lambda_exec_role" {
   })
 }
 
+resource "aws_iam_policy" "lambda_license_bucket" {
+  name   = "lambda_license_bucket"
+  policy = data.aws_iam_policy_document.lambda_license_bucket.json
+}
+
+data "aws_iam_policy_document" "lambda_license_bucket" {
+  statement {
+    actions   = [
+      "s3:ListBucket",
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:PutObject",
+    ]
+    resources = [ 
+      "${module.create_license_ap_northeast_1.license_bucket_arn}/*",
+      "${module.create_license_ap_northeast_2.license_bucket_arn}/*",
+      "${module.create_license_ap_northeast_3.license_bucket_arn}/*",
+      "${module.create_license_ap_south_1.license_bucket_arn}/*",
+      "${module.create_license_ap_southeast_1.license_bucket_arn}/*",
+      "${module.create_license_ap_southeast_2.license_bucket_arn}/*",
+      "${module.create_license_ca_central_1.license_bucket_arn}/*",
+      "${module.create_license_eu_central_1.license_bucket_arn}/*",
+      "${module.create_license_eu_north_1.license_bucket_arn}/*",
+      "${module.create_license_eu_west_1.license_bucket_arn}/*",
+      "${module.create_license_eu_west_2.license_bucket_arn}/*",
+      "${module.create_license_eu_west_3.license_bucket_arn}/*",
+      "${module.create_license_sa_east_1.license_bucket_arn}/*",
+      "${module.create_license_us_east_1.license_bucket_arn}/*",
+      "${module.create_license_us_east_2.license_bucket_arn}/*",
+      "${module.create_license_us_west_1.license_bucket_arn}/*",
+      "${module.create_license_us_west_2.license_bucket_arn}/*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_license_bucket" {
+  role = aws_iam_role.license_lambda_exec_role.name
+  policy_arn = aws_iam_policy.lambda_license_bucket.arn
+}

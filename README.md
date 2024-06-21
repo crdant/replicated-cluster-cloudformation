@@ -11,7 +11,7 @@ The overall architecture includes components that exist in the vendor account,
 marketplace artifacts, and eventual delivered infrastructure/software in the
 end customer account.
 
-![Architecture diagram showing components in the vendor account, customer account, and provided by Amazon](./img/architecture.svg)
+![Overview diagram showing components in the vendor account, customer account, and provided by Amazon](./img/overview.svg)
 
 Details
 -------

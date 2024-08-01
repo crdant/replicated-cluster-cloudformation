@@ -1,127 +1,271 @@
-locals {
-  user_data = templatefile("${path.module}/templates/user-data.tftpl",
-                             {
-                               application = var.application,
-                               install_dir = "/opt/${var.application}",
-                              }
-                          )
-  cloudformation_template = templatefile("${path.module}/templates/slackernews_cloudformation.tftpl",
-                                {
-                                  license_topic_arn = aws_sns_topic.create_license.arn
-                                  user_data = indent(14, local.user_data)
-                                  app_id = var.app_id
-                                  application = var.application,
-                                }
-                             )
-}
-resource "random_pet" "bucket_suffix" {
-  length = 2
-}
+module "create_license_ap_northeast_1" {
+  source = "./create-license"
 
-data "aws_iam_policy_document" "stack_policy" {
-  statement {
-    effect = "Allow"
-    actions   = [ "lambda:InvokeFunction" ]
-    resources = [ aws_lambda_function.create_license.arn ]
-  }
+  application = var.application
+  app_id = var.app_id
 
-  statement {
-    effect = "Allow"
-    actions   = [
-                  "ec2:RunInstances",
-                  "ec2:TerminateInstances",
-                  "ec2:DescribeInstances",
-                  "ec2:DescribeInstanceStatus",
-                  "ec2:CreateSecurityGroup",
-                  "ec2:DeleteSecurityGroup",
-                  "ec2:AuthorizeSecurityGroupIngress",
-                  "ec2:RevokeSecurityGroupIngress",
-                  "ec2:DescribeSecurityGroups",
-                  "ec2:CreateVpc",
-                  "ec2:DeleteVpc",
-                  "ec2:ModifyVpcAttribute",
-                  "ec2:DescribeVpcs",
-                  "ec2:CreateSubnet",
-                  "ec2:DeleteSubnet",
-                  "ec2:ModifySubnetAttribute",
-                  "ec2:DescribeSubnets",
-                  "ec2:CreateInternetGateway",
-                  "ec2:DeleteInternetGateway",
-                  "ec2:AttachInternetGateway",
-                  "ec2:DetachInternetGateway",
-                  "ec2:DescribeInternetGateways",
-                  "ec2:CreateRoute",
-                  "ec2:CreateRouteTable",
-                  "ec2:DeleteRoute",
-                  "ec2:DeleteRouteTable",
-                  "ec2:AssociateRouteTable",
-                  "ec2:DisassociateRouteTable",
-                  "ec2:DescribeRouteTables",
-                  "ec2:CreateSecurityGroup",
-                  "ec2:DeleteSecurityGroup",
-                  "ec2:AuthorizeSecurityGroupIngress",
-                  "ec2:RevokeSecurityGroupIngress",
-                  "ec2:DescribeSecurityGroups"
-                ]
-    resources = [ "*" ]
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.ap-northeast-1
   }
 }
 
-resource "aws_iam_policy" "stack_policy" {
-  name        = "create-${var.application}-cluster"
-  description = "License creation stack policy"
+module "create_license_ap_northeast_2" {
+  source = "./create-license"
 
-  policy = data.aws_iam_policy_document.stack_policy.json
-}
+  application = var.application
+  app_id = var.app_id
 
-resource "aws_iam_role" "stack_role" {
-  name = "create-${var.application}-role"
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "cloudformation.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "stack_role" {
-  role       = aws_iam_role.stack_role.name
-  policy_arn = aws_iam_policy.stack_policy.arn
-}
-
-resource "aws_s3_bucket" "template_bucket" {
-  bucket = "slackernews-cf-${random_pet.bucket_suffix.id}"
-}
-
-resource "aws_s3_bucket_public_access_block" "template_bucket" {
-  bucket = aws_s3_bucket.template_bucket.id
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
-}
-
-resource "aws_s3_bucket_versioning" "template_bucket" {
-  bucket = aws_s3_bucket.template_bucket.id
-  versioning_configuration {
-    status = "Enabled"
+  providers = {
+    aws = aws.ap-northeast-2
   }
 }
 
-resource "aws_s3_object" "cloudformation_template" {
-  bucket = aws_s3_bucket.template_bucket.id
-  key    = "slackernews_cloudformation.yaml"
-  acl    = "public-read"
+module "create_license_ap_northeast_3" {
+  source = "./create-license"
 
-  content_type = "text/yaml"
-  content      = local.cloudformation_template
+  application = var.application
+  app_id = var.app_id
 
-  etag = md5(local.cloudformation_template)
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.ap-northeast-3
+  }
+}
+
+module "create_license_ap_south_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.ap-south-1
+  }
+}
+
+module "create_license_ap_southeast_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.ap-southeast-1
+  }
+}
+
+module "create_license_ap_southeast_2" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.ap-southeast-2
+  }
+}
+
+module "create_license_ca_central_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.ca-central-1
+  }
+}
+
+module "create_license_eu_central_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.eu-central-1
+  }
+}
+
+module "create_license_eu_north_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.eu-north-1
+  }
+}
+
+module "create_license_eu_west_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.eu-west-1
+  }
+}
+
+module "create_license_eu_west_2" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.eu-west-2
+  }
+}
+
+module "create_license_eu_west_3" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.eu-west-3
+  }
+}
+
+module "create_license_sa_east_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.sa-east-1
+  }
+}
+
+module "create_license_us_east_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.us-east-1
+  }
+}
+
+module "create_license_us_east_2" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.us-east-2
+  }
+}
+
+module "create_license_us_west_1" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.us-west-1
+  }
+}
+
+module "create_license_us_west_2" {
+  source = "./create-license"
+
+  application = var.application
+  app_id = var.app_id
+
+  owner = var.owner
+  build_directory = var.build_directory
+  role = aws_iam_role.license_lambda_exec_role.arn
+  api_token = var.api_token
+
+  providers = {
+    aws = aws.us-west-2
+  }
 }

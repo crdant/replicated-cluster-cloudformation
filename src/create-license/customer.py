@@ -103,6 +103,7 @@ class Customer:
   def license(self):
     get_license_url = "https://api.replicated.com/vendor/v3/app/{app}/customer/{customer}/license-download".format(
         app=self.appId, customer=self.id )
+    logger.debug("getting license for customer {id} from {url}".format(id=self.id, url=get_license_url))
 
     headers = {
         "accept": "application/json",

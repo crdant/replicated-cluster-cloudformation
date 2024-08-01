@@ -46,6 +46,7 @@ Parameters:
     Type: Number
     Description: |
       Size for the boot disk
+    MinValue: 50
 
   SubscriptionType:
     Type: String
@@ -67,13 +68,22 @@ Parameters:
   Email:
     Type: String
     Description: |
-      Email to use for you description. This will be your login for accessing the Slackernews
-      Helm chart and will not be used for any other purposes.
+      Email to use for your subscription. This email will only be used to
+      contact you about your use of Slackernews.
 
   PublicKey:
     Type: String
     Description: |
       Public key to enable connecting to the initial node of the cluster via SSH
+
+  AdminNetwork:
+    Type: String
+    Description: |
+      To protect access to the SSH and Admin Console ports on your Slackernews
+      instance, please specify the network your administrators should be
+      allowed to connect from using CIDR format. Use a CIDR range of the
+      format to x.x.x.x/32 to allow one specific IP address access, 0.0.0.0/0
+      to allow all IP addresses access, or another CIDR range.
 
 Mappings:
   LicenseType:
@@ -81,51 +91,86 @@ Mappings:
       Type: prod
     Trial:
       Type: trial
+  LicenseTopic:
+    ap-northeast-1:
+      Arn: ${license_topic_ap_northeast_1}
+    ap-northeast-2:
+      Arn: ${license_topic_ap_northeast_2}
+    ap-northeast-3:
+      Arn: ${license_topic_ap_northeast_3}
+    ap-south-1:
+      Arn: ${license_topic_ap_south_1}
+    ap-southeast-1:
+      Arn: ${license_topic_ap_southeast_1}
+    ap-southeast-2:
+      Arn: ${license_topic_ap_southeast_2}
+    ca-central-1:
+      Arn: ${license_topic_ca_central_1}
+    eu-central-1:
+      Arn: ${license_topic_eu_central_1}
+    eu-north-1:
+      Arn: ${license_topic_eu_north_1}
+    eu-west-1:
+      Arn: ${license_topic_eu_west_1}
+    eu-west-2:
+      Arn: ${license_topic_eu_west_2}
+    eu-west-3:
+      Arn: ${license_topic_eu_west_3}
+    sa-east-1:
+      Arn: ${license_topic_sa_east_1}
+    us-east-1:
+      Arn: ${license_topic_us_east_1}
+    us-east-2:
+      Arn: ${license_topic_us_east_2}
+    us-west-1:
+      Arn: ${license_topic_us_west_1}
+    us-west-2:
+      Arn: ${license_topic_us_west_2}
   Ami:
     ap-northeast-1:
-      AmiId: ami-0433ab56bedd4ba62
+      AmiId: ami-0ea54800728c521f7
     ap-northeast-2:
-      AmiId: ami-07d6a79d29f68e588
+      AmiId: ami-001dd9d4d93ebc9f6
     ap-northeast-3:
-      AmiId: ami-041408d2aa275c161
+      AmiId: ami-0f313fe7a9904d9be
     ap-south-1:
-      AmiId: ami-02b468ffcbc301e63
+      AmiId: ami-019b76b10b32f1e29
     ap-southeast-1:
-      AmiId: ami-05df8ebfda43f3fae
+      AmiId: ami-02f30ef627f0b9f69
     ap-southeast-2:
-      AmiId: ami-06aa4bfb58e6b7d70
+      AmiId: ami-025e4be3d25a002a4
     ca-central-1:
-      AmiId: ami-0c75652db9c9ba7a8
+      AmiId: ami-0d967421c3dc03e37
     eu-central-1:
-      AmiId: ami-08a6c168d7aa87d28
+      AmiId: ami-04bafc8eda3656736
     eu-north-1:
-      AmiId: ami-0defe84dd3cc364e3
+      AmiId: ami-0993229b2e5a342e0
     eu-west-1:
-      AmiId: ami-0966d87f8eed3531e
+      AmiId: ami-0b93023395f2d08df
     eu-west-2:
-      AmiId: ami-02122a55d9c2f2c96
+      AmiId: ami-052c5c414cead3d5e
     eu-west-3:
-      AmiId: ami-0cc0349d63eb0474a
+      AmiId: ami-02afec65f6f75a712
     sa-east-1:
-      AmiId: ami-05c5b4b22591903dd
+      AmiId: ami-0ba5714b1e11f6c3d
     us-east-1:
-      AmiId: ami-06ca1f5767c9f0234
+      AmiId: ami-0a3721dec5a0e32da
     us-east-2:
-      AmiId: ami-02b21560eb53d97db
+      AmiId: ami-002bea694ae16501b
     us-west-1:
-      AmiId: ami-0abd8c17b7fb52821
+      AmiId: ami-0339645cd930ff1bc
     us-west-2:
-      AmiId: ami-032b5e454f0258a80
+      AmiId: ami-0fb6aee51de24a99d
 
 Conditions:
   IsBeta: !Equals [ BetaProgram, "Yes" ]
 
 Resources:
-  CreateLicense:
+  License:
     Type: Custom::LambdaTrigger
     Properties:
-      ServiceToken: ${license_topic_arn}
-      Name: !Ref AWS::StackId 
+      ServiceToken: !FindInMap [ LicenseTopic, !Ref AWS::Region, Arn ]
+      Name: !Join [ "", ["AWS Marketplace (Region ", !Ref AWS::Region, ", Account: ", !Ref AWS::AccountId, ")" ]]
       ExternalId: !Ref AWS::AccountId
       Email: !Ref Email
       AppId: ${app_id}
@@ -171,7 +216,7 @@ Resources:
     Type: AWS::EC2::Instance
     CreationPolicy:
       ResourceSignal:
-        Timeout: 'PT15M'
+        Timeout: 'PT25M'
     Properties:
       ImageId: !FindInMap [ Ami, !Ref AWS::Region, AmiId ]
       InstanceType: !Ref InstanceType   
@@ -192,8 +237,7 @@ Resources:
           Fn::Sub:
             - |
               ${user_data}
-            - InstallerUri: !GetAtt CreateLicense.InstallerUri
-              DownloadToken: !GetAtt CreateLicense.DownloadToken
+            - LicenseUri: !GetAtt License.LicenseUri
               PublicKey: !Ref PublicKey
               AdminConsolePasswordArn: !Ref AdminConsolePassword
               StackName: !Ref AWS::StackName 
@@ -252,27 +296,21 @@ Resources:
         - IpProtocol: tcp
           FromPort: '22'
           ToPort: '22'
-          CidrIp: 0.0.0.0/0 
+          CidrIp: !Ref AdminNetwork
         # Admin console
         - IpProtocol: tcp
           FromPort: '30000'
           ToPort: '30000'
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref AdminNetwork
         # HTTPS for ingress/application traffic
         - IpProtocol: tcp
           FromPort: '443'
           ToPort: '443'
 
 Outputs:
-  InstallUri:
-    Description: URI for the embedded cluster download
-    Value: !GetAtt CreateLicense.InstallerUri
-  DownloadToken:
-    Description: Authorization token for installer download
-    Value: !GetAtt CreateLicense.DownloadToken
-  NodePublicHostname:
-    Description: Public hostname for the initial cloud instance
-    Value: !GetAtt InitialNode.PublicDnsName
   ConsoleUri:
     Description: URI to access the admin console of the new cluster
     Value: !Sub http://$${InitialNode.PublicIp}:30000
+  LicenseUri:
+    Description: URI to download the license file, expires after 10 minutes
+    Value: !GetAtt License.LicenseUri 

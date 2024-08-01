@@ -5,3 +5,7 @@ output "template_url" {
 output "stack_role_arn" {
   value = aws_iam_role.stack_role.arn
 }
+
+output "marketplace_ami_ingestion_role_arn" {
+  value = aws_iam_role.marketplace_ami_ingestion.arn
+}

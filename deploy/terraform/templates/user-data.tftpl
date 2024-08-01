@@ -26,11 +26,9 @@ users:
 runcmd:
 - |
   # download the latest release of the Replicated embedded cluster from GitHub and install it
-  cd /home/ubuntu
-  curl $${InstallerUri} -H "Authorization: $${DownloadToken}" \
-      | tar -xzf - \
-    && ./${application} install --license ./license.yaml --no-prompt
-  chown ubuntu:ubuntu ./${application}
+  curl -fL -o /opt/${application}/license.yaml '$${LicenseUri}' 
+  chown ${application}:${application} /opt/${application}/license.yaml
+  /opt/${application}/${application} install --license /opt/${application}/license.yaml --airgap-bundle /opt/${application}/${application}.airgap --no-prompt 
 
 - |
   # use the KOTS CLI to reset the admin console password to the generated password
@@ -47,5 +45,3 @@ runcmd:
 - |
   # signal completion to CloudFormation
   /usr/local/bin/cfn-signal --success true --stack $${StackName} --resource $${ResourceName} --region $${Region}
-
-  

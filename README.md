@@ -58,7 +58,7 @@ submitting the product load form:
    also disclose that in your product description or usage instructions.
 
 I have included the [product load form for
-SlackerNews](marketplace/Slackernews AMI-CF Product - Rev 4.xlsx) nd the
+SlackerNews](marketplace/Slackernews%20AMI-CF%20Product%20-%20Rev%204.xlsx) and the
 [architecture diagram](marketplace/architecture.svg) for you to adapt to your
 application.
 

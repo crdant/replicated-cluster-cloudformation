@@ -21,7 +21,7 @@ a Replicated customer and an instance of your application running with the
 Replicated Embedded Cluster. This is the foundation for creating an AWS
 Marketplace product that is distributed with Replicated. The cluster created
 is a single node based a [AMI including the Replicated Embedded Cluster binary
-for the application](crdant/embedded-cluster-ami).
+for the application](https://github.com/crdant/embedded-cluster-ami).
 
 The license is handled as a custom resource in CloudFormation. It uses
 the Replicated customer ID as the resource ID to facilitate managing the
@@ -41,7 +41,7 @@ execution.
 
 This template has been used to publish [SlackerNews](https://slackernews.io)
 as an AWS Marketplace product. To use it for your own product, you will need
-to [create an AMI for your application](crdant/embedded-cluster-ami), fill out
+to [create an AMI for your application](https://github.com/crdant/embedded-cluster-ami), fill out
 the product load from on the [AWS Marketplace Management
 Portal](https://aws.amazon.com/marketplace/management/products/?), provide an
 architecture diagram, then submit the product for review. 

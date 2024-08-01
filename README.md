@@ -1,4 +1,4 @@
-# Replicated Cluster Cloudformation Demo
+# Replicated Cluster CloudFormation Demo
    
 Implements a CloudFormation template the manages a Replicated installation
 using the Embedded Cluster and a new license specific to the cluster.
@@ -40,7 +40,25 @@ managed with Terraform, along with a role and policy for the stack
 execution.
 
 This template has been used to publish [SlackerNews](https://slackernews.io)
-as an AWS Marketplace product.
+as an AWS Marketplace product. To use it for your own product, you will need
+to [create an AMI for your application](crdant/embedded-cluster-ami), fill out
+the product load from on the [AWS Marketplace Management
+Portal](https://aws.amazon.com/marketplace/management/products/?), provide an
+architecture diagram, then submit the product for review. 
+
+There are a few things you need to be sure of when
+submitting the product load form:
+
+1. You must disclose that you are collecting customer information in the
+   description or usage instructions. You should disclose that you collect
+   their email and that is used for licensing and support purposes. You should
+   also disclose the [telemetry collected by Replicated on your
+   behalf](https://docs.replicated.com/vendor/instance-insights-event-data).
+2. Since the CloudFormation template creates IAM roles and policies, you must
+   also disclose that in your product description or usage instructions.
+
+I have included the [product load form for SlackerNews]() and the [architecture
+diagram](img/architecture.svg) for you to adapt to your application.
 
 Usage
 -----
@@ -57,11 +75,11 @@ in the Terraform output.
 
 ## Makefile reference
 
-| target | purpose |
-|--------|----------|
+| target  | purpose  |
+|---------|----------|
 | all     | create the lambda function for the custom resource and store the CloudFormation template in s3, same a `deploy` |
 | deploy  | create the lambda function for the custom resource and store the CloudFormation template in s3, same a `all` |
-| pepare  | prepares a build directory and copies the lambda source files into it |
+| prepare | prepares a build directory and copies the lambda source files into it |
 | package | package the lambda function and it's dependencies into a zip file for deployment |
 | plan    | runs terraform plan to validate the terraform manifests and understand what `deploy` will create |
 | destroy | removes all the AWS resources |

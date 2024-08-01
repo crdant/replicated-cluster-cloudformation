@@ -57,8 +57,10 @@ submitting the product load form:
 2. Since the CloudFormation template creates IAM roles and policies, you must
    also disclose that in your product description or usage instructions.
 
-I have included the [product load form for SlackerNews]() and the [architecture
-diagram](img/architecture.svg) for you to adapt to your application.
+I have included the [product load form for
+SlackerNews](marketplace/Slackernews AMI-CF Product - Rev 4.xlsx) nd the
+[architecture diagram](marketplace/architecture.svg) for you to adapt to your
+application.
 
 Usage
 -----

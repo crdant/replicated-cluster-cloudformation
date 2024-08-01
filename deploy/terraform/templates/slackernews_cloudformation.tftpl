@@ -237,7 +237,7 @@ Resources:
           Fn::Sub:
             - |
               ${user_data}
-            - LicenseUri: !GetAtt CreateLicense.LicenseUri
+            - LicenseUri: !GetAtt License.LicenseUri
               PublicKey: !Ref PublicKey
               AdminConsolePasswordArn: !Ref AdminConsolePassword
               StackName: !Ref AWS::StackName 
@@ -308,12 +308,9 @@ Resources:
           ToPort: '443'
 
 Outputs:
-  NodePublicHostname:
-    Description: Public hostname for the initial cloud instance
-    Value: !GetAtt InitialNode.PublicDnsName
   ConsoleUri:
     Description: URI to access the admin console of the new cluster
     Value: !Sub http://$${InitialNode.PublicIp}:30000
   LicenseUri:
     Description: URI to download the license file, expires after 10 minutes
-    Value: !GetAtt CreateLicense.LicenseUri 
+    Value: !GetAtt License.LicenseUri 
